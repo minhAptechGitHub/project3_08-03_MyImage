@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, use, useState } from 'react';
 import apiService from '../Admin/Services';
 
 const EMPTY = {
@@ -11,6 +11,33 @@ function Register({ onGoLogin }) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const randomPass = () => {
+        const chars = {
+            uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            lowercase: "abcdefghijklmnopqrstuvwxyz",
+            numbers: "0123456789",
+            symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
+        };
+
+        const pool = Object.entries(options)
+            .filter(([_, enabled]) => enabled)
+            .map(([key]) => chars[key])
+            .join("");
+
+        if (!pool) return;
+
+        return Array.from(12, () => pool[Math.floor(Math.random() * pool.length)]).join("");
+    };
+    const generateUsername = (firstName, lastName) => {
+        const first = firstName.trim().split(" ");
+        const last = lastName.trim().split(" ");
+
+        const randomFirst = first[Math.floor(Math.random() * first.length)];
+        const randomLast = last[Math.floor(Math.random() * last.length)];
+
+        return (randomFirst + randomLast).toLowerCase();
+    };
+
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
         setError('');
@@ -18,7 +45,10 @@ function Register({ onGoLogin }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const { f_name, l_name, email, username, password } = form;
+        const { f_name, l_name, email } = form;
+        const username = generateUsername(f_name,l_name)
+        const password = randomPass();
+
         if (!f_name || !l_name || !email || !username || !password) {
             setError('Please fill in all required fields.');
             return;
@@ -26,7 +56,7 @@ function Register({ onGoLogin }) {
         setLoading(true);
         try {
             await apiService.customers.create({ ...form, isActive: true });
-            onGoLogin({ success: 'Account created! You can now log in.' });
+            onGoLogin({ success: 'Account created! You can now login as ' + username + ', mk:' + password });
         } catch {
             setError('Registration failed. Email or username may already be taken.');
         } finally {
