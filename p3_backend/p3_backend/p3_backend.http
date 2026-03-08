@@ -1,0 +1,6 @@
+@p3_backend_HostAddress = http://localhost:5002
+
+GET {{p3_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
