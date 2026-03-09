@@ -16,19 +16,21 @@ Make sure you have these installed before running the project:
 tao clone tu git
 
 ### 2. Setup the Backend (ASP.NET API)
-mo file (.sin) backend trong virtual studio,
-tu tao file appsettings.json(lay tu cac bai khac) va them : 
+-mo file (.sql) trong sql server management, roi chay sql de tao database
+
+-mo file (.sin) backend trong virtual studio,
+-tu tao file appsettings.json(lay tu cac bai khac) va them : 
 {
   "ConnectionStrings": {
     "DefaultConnection": "Server:'server sql connect';Database=p3_MyImage_2;Trusted_Connection=True;TrustServerCertificate=True"
   }
 }
 
-roi chay thu
+-roi chay thu
 
 
 ### 3. Setup the Frontend (React)
-mo file frontend trong vscode va mo terminal hay cmd, roi chay:
+-mo file frontend trong vscode va mo terminal hay cmd cua frontend, roi chay:
 npm install
 npm start
 

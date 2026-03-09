@@ -198,3 +198,71 @@
     width: 100%;
   }
 }
+
+/* ── Select fix (browser default arrow + height alignment) ── */
+select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+select.form-input:disabled {
+  background-image: none;
+  cursor: not-allowed;
+}
+
+/* ── Date / number input browser overrides ── */
+.form-input[type="date"],
+.form-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.form-input[type="number"]::-webkit-inner-spin-button,
+.form-input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.form-input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.form-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ── Form reset inside modal ── */
+.modal-container form {
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Textarea resize constraint ── */
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  max-height: 200px;
+}
+
+/* ── Button disabled states (e.g. while loading) ── */
+.btn-save:disabled,
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Focus ring for accessibility ── */
+.btn-save:focus,
+.btn-cancel:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.modal-close:focus {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}

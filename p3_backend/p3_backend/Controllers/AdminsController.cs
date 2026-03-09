@@ -52,6 +52,10 @@ namespace p3_backend.Controllers
                 return BadRequest();
             }
 
+            // Only hash if password was changed (not already a bcrypt hash)
+            if (!admin.Password.StartsWith("$2"))
+                admin.Password = BCrypt.Net.BCrypt.HashPassword(admin.Password);
+
             _context.Entry(admin).State = EntityState.Modified;
 
             try
@@ -78,6 +82,9 @@ namespace p3_backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Admin>> PostAdmin(Admin admin)
         {
+            // Hash the password before saving
+            admin.Password = BCrypt.Net.BCrypt.HashPassword(admin.Password);
+
             _context.Admins.Add(admin);
             await _context.SaveChangesAsync();
 

@@ -128,7 +128,7 @@ function CreateEditModal({ isOpen, onClose, onSave, editData, tableConfig, mode 
 
     // ─── Input renderer ──────────────────────────────────────────────────────
     const renderInput = (col) => {
-        const isDisabled = mode === 'edit' && (col.isPrimaryKey || col.readOnly);
+        const isDisabled = mode === 'edit' || 'create' && (col.isPrimaryKey || col.readOnly);
 
         // isDate: show a formatted, read-only date string
         if (col.isDate && isDisabled) {

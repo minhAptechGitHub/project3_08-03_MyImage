@@ -4,10 +4,6 @@ GO
 USE p3_MyImage_2;
 GO
 
-SELECT *
-FROM dbo.Customers AS c
-WHERE c.username = 'annguyen';
-
 -- TABLE: Customers
 IF OBJECT_ID('dbo.Customers', 'U') IS NOT NULL DROP TABLE dbo.Customers;
 
