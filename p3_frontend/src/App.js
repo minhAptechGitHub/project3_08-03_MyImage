@@ -12,7 +12,7 @@ function App() {
 
   const showNotify = (type, msg) => {
     setNotify({ type, msg });
-    setTimeout(() => setNotify(null), 4000);
+    setTimeout(() => setNotify(null), 12000);
   };
 
   // Called by LoginForm on success
@@ -55,7 +55,6 @@ function App() {
         <Login
           onSuccess={handleLoginSuccess}
           onGoRegister={() => setPage('register')}
-          setRole={setRole}
         />
       )}
 

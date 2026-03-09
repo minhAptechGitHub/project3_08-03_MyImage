@@ -2,14 +2,21 @@ import { lazy, use, useState } from 'react';
 import apiService from '../Admin/Services';
 
 const EMPTY = {
-    f_name: '', l_name: '', email: '', username: '', password: '',
-    dob: '', gender: '', p_no: '', address: ''
+    FName: '', LName: '', email: '', username: '', password: '',
+    dob: '', gender: '', pNo: '', address: ''
 };
 
 function Register({ onGoLogin }) {
     const [form, setForm] = useState(EMPTY);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const [options, setOptions] = useState({
+        uppercase: true,
+        lowercase: true,
+        numbers: true,
+        symbols: false,
+    });
 
     const randomPass = () => {
         const chars = {
@@ -26,7 +33,7 @@ function Register({ onGoLogin }) {
 
         if (!pool) return;
 
-        return Array.from(12, () => pool[Math.floor(Math.random() * pool.length)]).join("");
+        return Array.from({length: 12 }, () => pool[Math.floor(Math.random() * pool.length)]).join("");
     };
     const generateUsername = (firstName, lastName) => {
         const first = firstName.trim().split(" ");
@@ -45,18 +52,19 @@ function Register({ onGoLogin }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const { f_name, l_name, email } = form;
-        const username = generateUsername(f_name,l_name)
-        const password = randomPass();
+        const { FName, LName, email } = form;
+        form.username = generateUsername(FName, LName)
+        form.password = randomPass();
 
-        if (!f_name || !l_name || !email || !username || !password) {
+        if (!FName || !LName || !email || !form.username || !form.password) {
             setError('Please fill in all required fields.');
             return;
         }
         setLoading(true);
         try {
+            console.log(form)
             await apiService.customers.create({ ...form, isActive: true });
-            onGoLogin({ success: 'Account created! You can now login as ' + username + ', mk:' + password });
+            onGoLogin({ success: 'Account created! You can now login as ' + form.username + ', mk:' + form.password });
         } catch {
             setError('Registration failed. Email or username may already be taken.');
         } finally {
@@ -76,28 +84,18 @@ function Register({ onGoLogin }) {
                     <div className="auth-grid">
                         <div className="auth-field">
                             <label>First Name *</label>
-                            <input type="text" name="f_name" value={form.f_name}
+                            <input type="text" name="FName" value={form.FName}
                                 onChange={handleChange} placeholder="John" maxLength={50} />
                         </div>
                         <div className="auth-field">
                             <label>Last Name *</label>
-                            <input type="text" name="l_name" value={form.l_name}
+                            <input type="text" name="LName" value={form.LName}
                                 onChange={handleChange} placeholder="Doe" maxLength={50} />
                         </div>
                         <div className="auth-field">
                             <label>Email *</label>
                             <input type="email" name="email" value={form.email}
                                 onChange={handleChange} placeholder="john@example.com" maxLength={100} />
-                        </div>
-                        <div className="auth-field">
-                            <label>Username *</label>
-                            <input type="text" name="username" value={form.username}
-                                onChange={handleChange} placeholder="johndoe" maxLength={50} />
-                        </div>
-                        <div className="auth-field">
-                            <label>Password *</label>
-                            <input type="password" name="password" value={form.password}
-                                onChange={handleChange} placeholder="Choose a password" />
                         </div>
                         <div className="auth-field">
                             <label>Date of Birth</label>
@@ -109,13 +107,12 @@ function Register({ onGoLogin }) {
                                 <option value="">-- Select --</option>
                                 <option value="M">Male</option>
                                 <option value="F">Female</option>
-                                <option value="O">Other</option>
                             </select>
                         </div>
                         <div className="auth-field">
                             <label>Phone</label>
-                            <input type="tel" name="p_no" value={form.p_no}
-                                onChange={handleChange} placeholder="+1 555 000 0000" maxLength={20} />
+                            <input type="tel" name="pNo" value={form.pNo}
+                                onChange={handleChange} placeholder="0912345678" maxLength={20} />
                         </div>
                         <div className="auth-field span-2">
                             <label>Address</label>
