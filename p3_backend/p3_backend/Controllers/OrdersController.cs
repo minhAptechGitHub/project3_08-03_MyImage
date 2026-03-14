@@ -13,9 +13,9 @@ namespace p3_backend.Controllers
     [ApiController]
     public class OrdersController : ControllerBase
     {
-        private readonly P3MyImage2Context _context;
+        private readonly P3MyImage3Context _context;
 
-        public OrdersController(P3MyImage2Context context)
+        public OrdersController(P3MyImage3Context context)
         {
             _context = context;
         }
@@ -102,6 +102,46 @@ namespace p3_backend.Controllers
         private bool OrderExists(int id)
         {
             return _context.Orders.Any(e => e.OrderId == id);
+        }
+
+        // GET: api/Orders/customer/{custId}/details
+        [HttpGet("customer/{custId}/details")]
+        public async Task<IActionResult> GetOrdersByCustomer(int custId)
+        {
+            var orders = await _context.Orders
+                .Where(o => o.CustId == custId)
+                .Select(o => new
+                {
+                    o.OrderId,
+                    o.OrderDate,
+                    o.TotalPrice,
+                    o.ShippingAddress,
+                    o.Status,
+                    o.FolderName,
+                    OrderDetails = o.OrderDetails.Select(od => new
+                    {
+                        od.OrderDetailId,
+                        od.Quantity,
+                        od.PricePerCopy,
+                        od.LineTotal,
+                        Photo = new
+                        {
+                            od.Photo.PhotoId,
+                            od.Photo.FileName,
+                            od.Photo.FilePath,
+                        },
+                        Size = new
+                        {
+                            od.Size.SizeId,
+                            od.Size.SizeName,
+                            od.Size.Price,
+                        }
+                    }).ToList()
+                })
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return Ok(orders);
         }
     }
 }

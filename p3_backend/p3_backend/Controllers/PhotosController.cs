@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using p3_backend.Models;
+using p3_backend.Models.DTO;
 
 namespace p3_backend.Controllers
 {
@@ -13,9 +14,9 @@ namespace p3_backend.Controllers
     [ApiController]
     public class PhotosController : ControllerBase
     {
-        private readonly P3MyImage2Context _context;
+        private readonly P3MyImage3Context _context;
 
-        public PhotosController(P3MyImage2Context context)
+        public PhotosController(P3MyImage3Context context)
         {
             _context = context;
         }
@@ -102,6 +103,54 @@ namespace p3_backend.Controllers
         private bool PhotoExists(int id)
         {
             return _context.Photos.Any(e => e.PhotoId == id);
+        }
+
+        // POST: api/Photos/upload
+        // Receives: file (IFormFile) + orderId (int) via multipart/form-data
+        // Saves file to: wwwroot/uploads/folder_XXXX/<filename>
+        // Returns:  { fileName, filePath }
+        [HttpPost("upload")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UploadPhoto([FromForm] UploadPhotoRequest request)
+        {
+            if (request.File == null || request.File.Length == 0)
+                return BadRequest("No file provided.");
+
+            var file = request.File;
+            var orderId = request.OrderId;
+
+            // 1. Get the order to read its computed folder_name (e.g. "folder_0001")
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null)
+                return NotFound($"Order {orderId} not found.");
+
+            string folderName = order.FolderName; // persisted computed column from DB
+
+            // 2. Build save path: wwwroot/uploads/folder_XXXX/
+            string uploadRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", folderName);
+            Directory.CreateDirectory(uploadRoot); // creates the folder if it doesn't exist
+
+            // 3. Sanitize filename and build full path
+            string fileName = Path.GetFileName(file.FileName);
+            string fullPath = Path.Combine(uploadRoot, fileName);
+
+            // 4. Write file to disk
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // 5. Return relative path for storing in Photos table
+            string relativeFilePath = $"uploads/{folderName}/{fileName}";
+
+            return Ok(new
+            {
+                fileName = fileName,
+                filePath = relativeFilePath
+            });
         }
     }
 }

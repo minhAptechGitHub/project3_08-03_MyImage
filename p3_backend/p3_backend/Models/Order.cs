@@ -27,7 +27,5 @@ public partial class Order
 
     public virtual Payment? Payment { get; set; }
 
-    public virtual ICollection<Photo> Photos { get; set; } = new List<Photo>();
-
     public virtual Admin? ProcessedByAdmin { get; set; }
 }

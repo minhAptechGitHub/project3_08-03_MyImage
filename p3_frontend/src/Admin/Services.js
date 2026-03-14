@@ -11,6 +11,7 @@ const apiService = {
             throw error;
         }
     },
+
     async create(endpoint, data) {
         try {
             const response = await fetch(`${Api_Url}/api/${endpoint}`, {
@@ -54,22 +55,35 @@ const apiService = {
         }
     },
 
+    // ── NEW: FormData upload (no Content-Type header — browser sets it with boundary) ──
+    async upload(endpoint, formData) {
+        try {
+            const response = await fetch(`${Api_Url}/api/${endpoint}`, {
+                method: 'POST',
+                body: formData,   // ⚠️ Do NOT set Content-Type here — fetch sets it automatically
+            });
+            if (!response.ok) throw new Error('Failed to upload file');
+            return await response.json();
+        } catch (error) {
+            console.error(`Error uploading to ${endpoint}:`, error);
+            throw error;
+        }
+    },
+
     async login(endpoint, data) {
-    try {
-        const response = await fetch(`${Api_Url}/api/${endpoint}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-        
-        if (!response.ok) return null;
-        
-        return await response.json();
-    } catch (error) {
-        console.error(`Error logging in ${endpoint}:`, error);
-        return null; 
-    }
-},
+        try {
+            const response = await fetch(`${Api_Url}/api/${endpoint}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            if (!response.ok) return null;
+            return await response.json();
+        } catch (error) {
+            console.error(`Error logging in ${endpoint}:`, error);
+            return null;
+        }
+    },
 
     // Customers endpoints
     customers: {
@@ -96,10 +110,12 @@ const apiService = {
     },
     // Photos endpoints
     photos: {
-        getAll: () => apiService.get('Photos'),
-        create: (data) => apiService.create('Photos', data),
-        update: (id, data) => apiService.update('Photos', id, data),
-        delete: (id) => apiService.delete('Photos', id),
+        getAll:  () => apiService.get('Photos'),
+        create:  (data) => apiService.create('Photos', data),
+        update:  (id, data) => apiService.update('Photos', id, data),
+        delete:  (id) => apiService.delete('Photos', id),
+        // ── NEW: upload file to server folder, returns { fileName, filePath }
+        upload:  (formData) => apiService.upload('Photos/upload', formData),
     },
     // Orders endpoints
     orders: {
@@ -107,6 +123,7 @@ const apiService = {
         create: (data) => apiService.create('Orders', data),
         update: (id, data) => apiService.update('Orders', id, data),
         delete: (id) => apiService.delete('Orders', id),
+        getByCustomer: (custId) => apiService.get(`Orders/customer/${custId}/details`),
     },
     // OrderDetails endpoints
     orderDetails: {
@@ -122,6 +139,6 @@ const apiService = {
         update: (id, data) => apiService.update('Payments', id, data),
         delete: (id) => apiService.delete('Payments', id),
     },
-}
+};
 
 export default apiService;

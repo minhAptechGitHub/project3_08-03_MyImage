@@ -20,7 +20,6 @@ function App() {
     setUser(loggedInUser);
     if (role === 'Admin') setPage('admin');
     if (role === 'Customer') setPage('customer');
-    
   };
 
   const handleGoLogin = (opts) => {
