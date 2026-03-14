@@ -99,7 +99,6 @@ export const tableConfig = [
         label: 'Photo',
         columns: [
             { key: 'photoId',    label: 'Photo ID',    required: true,  isPrimaryKey: true, readOnly: true },
-            { key: 'orderId',    label: 'Order ID',    required: true,  inputType: 'number', min: 1 },
             { key: 'custId',     label: 'Customer ID', required: true,  inputType: 'number', min: 1 },
             { key: 'fileName',   label: 'File Name',   required: true,  maxLength: 255 },
             { key: 'filePath',   label: 'File Path',   required: true,  maxLength: 500 },

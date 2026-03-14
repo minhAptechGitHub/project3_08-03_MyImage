@@ -13,9 +13,9 @@ namespace p3_backend.Controllers
     [ApiController]
     public class OrderDetailsController : ControllerBase
     {
-        private readonly P3MyImage2Context _context;
+        private readonly P3MyImage3Context _context;
 
-        public OrderDetailsController(P3MyImage2Context context)
+        public OrderDetailsController(P3MyImage3Context context)
         {
             _context = context;
         }

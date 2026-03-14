@@ -169,7 +169,7 @@ function AdminPage({user, onLogout}) {
                 <div className="main-title-bar">
                     <h1 className="main-title">Photo Print Shop — Admin Panel</h1>
                     <div className="user-info">
-                        <span>{user.username} Admin</span>
+                        <span>{user.username} (Admin)</span>
                         <button className="btn-logout" onClick={onLogout}>Logout</button>
                     </div>
                 </div>

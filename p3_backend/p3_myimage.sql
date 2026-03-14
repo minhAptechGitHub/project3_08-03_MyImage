@@ -1,8 +1,10 @@
-CREATE DATABASE p3_MyImage_2;
+
+CREATE DATABASE p3_MyImage_3;
 GO
 
-USE p3_MyImage_2;
+USE p3_MyImage_3;
 GO
+
 
 -- TABLE: Customers
 IF OBJECT_ID('dbo.Customers', 'U') IS NOT NULL DROP TABLE dbo.Customers;
@@ -49,15 +51,6 @@ CREATE TABLE dbo.PrintSizes (
 );
 GO
 
--- Seed default print sizes
-INSERT INTO dbo.PrintSizes (size_name, price) VALUES
-    ('4x6',   0.99),
-    ('5x7',   1.99),
-    ('8x10',  3.99),
-    ('10x12', 5.99),
-    ('11x14', 7.99);
-GO
-
 
 -- TABLE: Orders
 IF OBJECT_ID('dbo.Orders', 'U') IS NOT NULL DROP TABLE dbo.Orders;
@@ -93,7 +86,6 @@ IF OBJECT_ID('dbo.Photos', 'U') IS NOT NULL DROP TABLE dbo.Photos;
 
 CREATE TABLE dbo.Photos (
     photo_id        INT             NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    order_id        INT             NOT NULL REFERENCES dbo.Orders(order_id),
     cust_id         INT             NOT NULL REFERENCES dbo.Customers(cust_id),
     file_name       VARCHAR(255)    NOT NULL,           -- original JPEG filename
     file_path       VARCHAR(500)    NOT NULL,           -- server path inside folder_name

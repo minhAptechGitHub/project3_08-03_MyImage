@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace p3_backend.Models;
 
-public partial class P3MyImage2Context : DbContext
+public partial class P3MyImage3Context : DbContext
 {
-    public P3MyImage2Context()
+    public P3MyImage3Context()
     {
     }
 
-    public P3MyImage2Context(DbContextOptions<P3MyImage2Context> options)
+    public P3MyImage3Context(DbContextOptions<P3MyImage3Context> options)
         : base(options)
     {
     }
@@ -31,15 +31,15 @@ public partial class P3MyImage2Context : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-7VMS0TQ;Database=p3_MyImage_2;Trusted_Connection=True;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=DESKTOP-7VMS0TQ;Database=p3_MyImage_3;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Admin>(entity =>
         {
-            entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA4141D1682A34");
+            entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA4141C4B89A0D");
 
-            entity.HasIndex(e => e.Username, "UQ__Admins__F3DBC57275E86286").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Admins__F3DBC5726F318138").IsUnique();
 
             entity.Property(e => e.AdminId).HasColumnName("admin_id");
             entity.Property(e => e.CreatedAt)
@@ -58,11 +58,11 @@ public partial class P3MyImage2Context : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.CustId).HasName("PK__Customer__A1B71F90EE903DFA");
+            entity.HasKey(e => e.CustId).HasName("PK__Customer__A1B71F90DD4692AB");
 
-            entity.HasIndex(e => e.Email, "UQ__Customer__AB6E616490B5DC26").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Customer__AB6E616402A89FDD").IsUnique();
 
-            entity.HasIndex(e => e.Username, "UQ__Customer__F3DBC572380B4286").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Customer__F3DBC572D4BF0306").IsUnique();
 
             entity.Property(e => e.CustId).HasColumnName("cust_id");
             entity.Property(e => e.Address)
@@ -110,9 +110,9 @@ public partial class P3MyImage2Context : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("PK__Orders__4659622955128F9B");
+            entity.HasKey(e => e.OrderId).HasName("PK__Orders__46596229692C0FFA");
 
-            entity.HasIndex(e => e.FolderName, "UQ__Orders__3AFC5A91B3FBE4CA").IsUnique();
+            entity.HasIndex(e => e.FolderName, "UQ__Orders__3AFC5A91D4D3CB57").IsUnique();
 
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.CustId).HasColumnName("cust_id");
@@ -142,16 +142,16 @@ public partial class P3MyImage2Context : DbContext
             entity.HasOne(d => d.Cust).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.CustId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Orders__cust_id__60A75C0F");
+                .HasConstraintName("FK__Orders__cust_id__48CFD27E");
 
             entity.HasOne(d => d.ProcessedByAdmin).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.ProcessedByAdminId)
-                .HasConstraintName("FK__Orders__processe__656C112C");
+                .HasConstraintName("FK__Orders__processe__4D94879B");
         });
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
-            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__3C5A4080FBBECDB5");
+            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__3C5A40808D4A7FE4");
 
             entity.HasIndex(e => new { e.OrderId, e.PhotoId, e.SizeId }, "UQ_OrderDetails_Photo_Size").IsUnique();
 
@@ -171,24 +171,24 @@ public partial class P3MyImage2Context : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderDeta__order__6E01572D");
+                .HasConstraintName("FK__OrderDeta__order__68487DD7");
 
             entity.HasOne(d => d.Photo).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.PhotoId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderDeta__photo__6EF57B66");
+                .HasConstraintName("FK__OrderDeta__photo__693CA210");
 
             entity.HasOne(d => d.Size).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.SizeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderDeta__size___6FE99F9F");
+                .HasConstraintName("FK__OrderDeta__size___6A30C649");
         });
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EA156ABFB1");
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EAF1E202B2");
 
-            entity.HasIndex(e => e.OrderId, "UQ__Payments__465962280AD4FE69").IsUnique();
+            entity.HasIndex(e => e.OrderId, "UQ__Payments__46596228C519FB8A").IsUnique();
 
             entity.Property(e => e.PaymentId).HasColumnName("payment_id");
             entity.Property(e => e.CreditCardEncrypted)
@@ -217,12 +217,12 @@ public partial class P3MyImage2Context : DbContext
             entity.HasOne(d => d.Order).WithOne(p => p.Payment)
                 .HasForeignKey<Payment>(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Payments__order___74AE54BC");
+                .HasConstraintName("FK__Payments__order___6EF57B66");
         });
 
         modelBuilder.Entity<Photo>(entity =>
         {
-            entity.HasKey(e => e.PhotoId).HasName("PK__Photos__CB48C83DC3605633");
+            entity.HasKey(e => e.PhotoId).HasName("PK__Photos__CB48C83DCCFDE9AF");
 
             entity.Property(e => e.PhotoId).HasColumnName("photo_id");
             entity.Property(e => e.CustId).HasColumnName("cust_id");
@@ -234,7 +234,6 @@ public partial class P3MyImage2Context : DbContext
                 .HasMaxLength(500)
                 .IsUnicode(false)
                 .HasColumnName("file_path");
-            entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.UploadDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
@@ -243,19 +242,14 @@ public partial class P3MyImage2Context : DbContext
             entity.HasOne(d => d.Cust).WithMany(p => p.Photos)
                 .HasForeignKey(d => d.CustId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Photos__cust_id__693CA210");
-
-            entity.HasOne(d => d.Order).WithMany(p => p.Photos)
-                .HasForeignKey(d => d.OrderId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Photos__order_id__68487DD7");
+                .HasConstraintName("FK__Photos__cust_id__5070F446");
         });
 
         modelBuilder.Entity<PrintSize>(entity =>
         {
-            entity.HasKey(e => e.SizeId).HasName("PK__PrintSiz__0DCACE31014C18BA");
+            entity.HasKey(e => e.SizeId).HasName("PK__PrintSiz__0DCACE3197135B68");
 
-            entity.HasIndex(e => e.SizeName, "UQ__PrintSiz__75FCE556DD36EBFC").IsUnique();
+            entity.HasIndex(e => e.SizeName, "UQ__PrintSiz__75FCE5562422D4B7").IsUnique();
 
             entity.Property(e => e.SizeId).HasColumnName("size_id");
             entity.Property(e => e.CreatedAt)

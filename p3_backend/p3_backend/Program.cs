@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using p3_backend.Data;
 using p3_backend.Models;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //dang ky DbConnect voi connection String
-builder.Services.AddDbContext<P3MyImage2Context>(options =>
+builder.Services.AddDbContext<P3MyImage3Context>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
@@ -30,8 +31,8 @@ var app = builder.Build();
 //them du lieu mau
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<P3MyImage2Context>();
-    DbSeeder.SeedData(context);
+    var context = scope.ServiceProvider.GetRequiredService<P3MyImage3Context>();
+    await DbSeeder.SeedData(context);
 }
 // Add this after var app = builder.Build();
 app.UseCors("AllowReactApp");
@@ -42,6 +43,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+//app.UseStaticFiles(); // serves wwwroot/uploads/ as public URLs
 
 app.UseAuthorization();
 

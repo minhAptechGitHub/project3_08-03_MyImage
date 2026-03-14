@@ -5,11 +5,93 @@ using System;
 
 namespace p3_backend.Data
 {
+
     public static class DbSeeder
     {
-        public static void SeedData(P3MyImage2Context context)
+        public static async Task SeedData(P3MyImage3Context context)
         {
-            context.Database.EnsureCreated();
+            // ============================================================
+            // CUSTOMERS (5)
+            // ============================================================
+            if (!context.Customers.Any())
+            {
+                var customers = new Customer[]
+                {
+                new Customer
+                {
+                    FName     = "Van",
+                    LName     = "An",
+                    Dob       = new DateOnly(2000, 3, 15),
+                    Gender    = "M",
+                    PNo       = "0912345678",
+                    Address   = "12 Ly Thuong Kiet, Ha Noi",
+                    Email     = "an.nguyen@gmail.com",
+                    Username  = "annguyen",
+                    Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
+                    IsActive  = true,
+                    CreatedAt = DateTime.Now
+                },
+                new Customer
+                {
+                    FName     = "Thi",
+                    LName     = "Binh",
+                    Dob       = new DateOnly(1998, 7, 22),
+                    Gender    = "F",
+                    PNo       = "0987654321",
+                    Address   = "45 Tran Hung Dao, Ho Chi Minh",
+                    Email     = "binh.tran@gmail.com",
+                    Username  = "binhtran",
+                    Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
+                    IsActive  = true,
+                    CreatedAt = DateTime.Now
+                },
+                new Customer
+                {
+                    FName     = "Minh",
+                    LName     = "Cuong",
+                    Dob       = new DateOnly(1995, 11, 5),
+                    Gender    = "M",
+                    PNo       = "0901112233",
+                    Address   = "88 Nguyen Hue, Da Nang",
+                    Email     = "cuong.minh@yahoo.com",
+                    Username  = "cuongminh",
+                    Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
+                    IsActive  = true,
+                    CreatedAt = DateTime.Now
+                },
+                new Customer
+                {
+                    FName     = "Thi",
+                    LName     = "Dung",
+                    Dob       = new DateOnly(2001, 1, 30),
+                    Gender    = "F",
+                    PNo       = "0933445566",
+                    Address   = "3 Phan Chu Trinh, Hue",
+                    Email     = "dung.le@gmail.com",
+                    Username  = "dungle",
+                    Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
+                    IsActive  = true,
+                    CreatedAt = DateTime.Now
+                },
+                new Customer
+                {
+                    FName     = "Quoc",
+                    LName     = "Em",
+                    Dob       = new DateOnly(1993, 5, 18),
+                    Gender    = "M",
+                    PNo       = "0977889900",
+                    Address   = "21 Le Loi, Can Tho",
+                    Email     = "em.pham@outlook.com",
+                    Username  = "empham",
+                    Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
+                    IsActive  = false,
+                    CreatedAt = DateTime.Now
+                },
+                };
+
+                await context.Customers.AddRangeAsync(customers);
+                await context.SaveChangesAsync();
+            }
 
             // ============================================================
             // ADMINS (2)
@@ -18,357 +100,207 @@ namespace p3_backend.Data
             {
                 var admins = new Admin[]
                 {
-                    new Admin
-                    {
-                        Username = "admin01",
-                        Password  = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
-                        CreatedAt = DateTime.Now
-                    },
-                    new Admin
-                    {
-                        Username = "admin02",
-                        Password  = BCrypt.Net.BCrypt.HashPassword("Admin@456"),
-                        CreatedAt = DateTime.Now
-                    }
-                };
-                context.Admins.AddRange(admins);
-                context.SaveChanges();
-            }
-
-            // ============================================================
-            // CuSTOMERS (5)
-            // ============================================================
-            if (!context.Customers.Any())
-            {
-                var customers = new Customer[]
+                new Admin
                 {
-                    new Customer
-                    {
-                        FName    = "Nguyen Van",
-                        LName    = "An",
-                        Dob       = new DateOnly(2000, 3, 15),
-                        Gender    = "M",
-                        PNo      = "0912345678",
-                        Address   = "12 Ly Thuong Kiet, Ha Noi",
-                        Email     = "an.nguyen@gmail.com",
-                        Username  = "annguyen",
-                        Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
-                        IsActive  = true,
-                        CreatedAt = DateTime.Now
-                    },
-                    new Customer
-                    {
-                        FName    = "Tran Thi",
-                        LName    = "Bình",
-                        Dob       = new DateOnly(1998, 7, 22),
-                        Gender    = "F",
-                        PNo      = "0923456789",
-                        Address   = "45 Nguyen Hue, TP. Ho Chi Minh",
-                        Email     = "binh.tran@gmail.com",
-                        Username  = "binhtran",
-                        Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
-                        IsActive  = true,
-                        CreatedAt = DateTime.Now
-                    },
-                    new Customer
-                    {
-                        FName    = "Le Minh",
-                        LName    = "Châu",
-                        Dob       = new DateOnly(2001, 11, 5),
-                        Gender    = "M",
-                        PNo      = "0934567890",
-                        Address   = "78 Tran Phu, Da Nang",
-                        Email     = "chau.le@gmail.com",
-                        Username  = "chaule",
-                        Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
-                        IsActive  = true,
-                        CreatedAt = DateTime.Now
-                    },
-                    new Customer
-                    {
-                        FName    = "Pham Thi",
-                        LName    = "Dung",
-                        Dob       = new DateOnly(1999, 4, 18),
-                        Gender    = "F",
-                        PNo      = "0945678901",
-                        Address   = "33 Hung Vuong, Hue",
-                        Email     = "dung.pham@gmail.com",
-                        Username  = "dungpham",
-                        Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
-                        IsActive  = true,
-                        CreatedAt = DateTime.Now
-                    },
-                    new Customer
-                    {
-                        FName    = "Hoang Van",
-                        LName    = "Em",
-                        Dob       = new DateOnly(2002, 9, 30),
-                        Gender    = "M",
-                        PNo      = "0956789012",
-                        Address   = "21 Dien Bien Phu, Hai Phong",
-                        Email     = "em.hoang@gmail.com",
-                        Username  = "emhoang",
-                        Password  = BCrypt.Net.BCrypt.HashPassword("Cust@123"),
-                        IsActive  = true,
-                        CreatedAt = DateTime.Now
-                    }
+                    Username  = "admin",
+                    Password  = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                    CreatedAt = DateTime.Now
+                },
+                new Admin
+                {
+                    Username  = "staff01",
+                    Password  = BCrypt.Net.BCrypt.HashPassword("Staff@123"),
+                    CreatedAt = DateTime.Now
+                },
                 };
-                context.Customers.AddRange(customers);
-                context.SaveChanges();
+
+                await context.Admins.AddRangeAsync(admins);
+                await context.SaveChangesAsync();
             }
 
             // ============================================================
             // PRINT SIZES (4)
-            // Skip if already seeded from SQL script
             // ============================================================
             if (!context.PrintSizes.Any())
             {
-                var printSizes = new PrintSize[]
+                var sizes = new PrintSize[]
                 {
-                    new PrintSize { SizeName = "4x6",   Price = 0.99m,  IsAvailable = true, CreatedAt = DateTime.Now },
-                    new PrintSize { SizeName = "5x7",   Price = 1.99m,  IsAvailable = true, CreatedAt = DateTime.Now },
-                    new PrintSize { SizeName = "8x10",  Price = 3.99m,  IsAvailable = true, CreatedAt = DateTime.Now },
-                    new PrintSize { SizeName = "10x12", Price = 5.99m,  IsAvailable = true, CreatedAt = DateTime.Now },
+                new PrintSize { SizeName = "3x4",   Price = 5000.00m,  IsAvailable = true,  CreatedAt = DateTime.Now },
+                new PrintSize { SizeName = "4x6",   Price = 8000.00m,  IsAvailable = true,  CreatedAt = DateTime.Now },
+                new PrintSize { SizeName = "5x7",   Price = 15000.00m, IsAvailable = true,  CreatedAt = DateTime.Now },
+                new PrintSize { SizeName = "8x10",  Price = 30000.00m, IsAvailable = false, CreatedAt = DateTime.Now },
                 };
-                context.PrintSizes.AddRange(printSizes);
-                context.SaveChanges();
+
+                await context.PrintSizes.AddRangeAsync(sizes);
+                await context.SaveChangesAsync();
             }
 
             // ============================================================
-            // ORDERS + PHOTOS + ORDER DETAILS + PAYMENTS (5 orders)
-            // Each order gets photos, line items, and a payment record
+            // ORDERS (3)
             // ============================================================
             if (!context.Orders.Any())
             {
-                // Fetch seeded data to get real IDs
-                var customers = context.Customers.ToList();
-                var printSizes = context.PrintSizes.ToList();
-                var admins = context.Admins.ToList();
+                var customer1 = await context.Customers.FirstAsync(c => c.Username == "annguyen");
+                var customer2 = await context.Customers.FirstAsync(c => c.Username == "binhtran");
+                var admin = await context.Admins.FirstAsync(a => a.Username == "staff01");
 
-                var size4x6 = printSizes.First(p => p.SizeName == "4x6");
-                var size5x7 = printSizes.First(p => p.SizeName == "5x7");
-                var size8x10 = printSizes.First(p => p.SizeName == "8x10");
-                var size10x12 = printSizes.First(p => p.SizeName == "10x12");
-
-                var cust1 = customers[0]; // Nguyen Van An
-                var cust2 = customers[1]; // Tran Thi Bình
-                var cust3 = customers[2]; // Le Minh Châu
-                var cust4 = customers[3]; // Pham Thi Dung
-                var cust5 = customers[4]; // Hoang Van Em
-
-                // ----------------------------------------------------------
-                // ORDER 1 — Completed (credit card, processed by admin)
-                // ----------------------------------------------------------
-                var order1 = new Order
+                var orders = new Order[]
                 {
-                    CustId = cust1.CustId,
-                    OrderDate = DateTime.Now.AddDays(-10),
-                    TotalPrice = 0,
-                    ShippingAddress = "12 Ly Thường Kiet, Ha Noi",
-                    Status = "Completed",
-                    ProcessedByAdminId = admins[0].AdminId
-                };
-                context.Orders.Add(order1);
-                context.SaveChanges();
-
-                var photo1a = new Photo { OrderId = order1.OrderId, CustId = cust1.CustId, FileName = "family_trip.jpg", FilePath = $"uploads/{order1.OrderId}/family_trip.jpg" };
-                var photo1b = new Photo { OrderId = order1.OrderId, CustId = cust1.CustId, FileName = "birthday_party.jpg", FilePath = $"uploads/{order1.OrderId}/birthday_party.jpg" };
-                context.Photos.AddRange(photo1a, photo1b);
-                context.SaveChanges();
-
-                var od1 = new List<OrderDetail>
+                new Order
                 {
-                    new OrderDetail { OrderId = order1.OrderId, PhotoId = photo1a.PhotoId, SizeId = size4x6.SizeId,  Quantity = 3, PricePerCopy = size4x6.Price  },
-                    new OrderDetail { OrderId = order1.OrderId, PhotoId = photo1a.PhotoId, SizeId = size5x7.SizeId,  Quantity = 1, PricePerCopy = size5x7.Price  },
-                    new OrderDetail { OrderId = order1.OrderId, PhotoId = photo1b.PhotoId, SizeId = size4x6.SizeId,  Quantity = 2, PricePerCopy = size4x6.Price  },
-                };
-                context.OrderDetails.AddRange(od1);
-                context.SaveChanges();
-
-                order1.TotalPrice = od1.Sum(d => d.Quantity * d.PricePerCopy);
-                context.SaveChanges();
-
-                context.Payments.Add(new Payment
+                    CustId          = customer1.CustId,
+                    OrderDate       = DateTime.Now.AddDays(-5),
+                    TotalPrice      = 46000.00m,
+                    ShippingAddress = "12 Ly Thuong Kiet, Ha Noi",
+                    Status          = "Completed",
+                    ProcessedByAdminId = admin.AdminId
+                },
+                new Order
                 {
-                    OrderId = order1.OrderId,
-                    PaymentMethod = "CreditCard",
-                    CreditCardEncrypted = "ENC:AES256:4111111111111111",
-                    EncryptionMethod = "AES-256",
-                    PaymentDate = order1.OrderDate.AddMinutes(5),
-                    PaymentStatus = "Verified"
-                });
-                context.SaveChanges();
-
-                // ----------------------------------------------------------
-                // ORDER 2 — Shipped (credit card)
-                // ----------------------------------------------------------
-                var order2 = new Order
+                    CustId          = customer2.CustId,
+                    OrderDate       = DateTime.Now.AddDays(-2),
+                    TotalPrice      = 23000.00m,
+                    ShippingAddress = "45 Tran Hung Dao, Ho Chi Minh",
+                    Status          = "Payment Verified",
+                    ProcessedByAdminId = admin.AdminId
+                },
+                new Order
                 {
-                    CustId = cust2.CustId,
-                    OrderDate = DateTime.Now.AddDays(-5),
-                    TotalPrice = 0,
-                    ShippingAddress = "45 Nguyen Hue, TP. Ho Chi Minh",
-                    Status = "Shipped",
-                    ProcessedByAdminId = admins[1].AdminId
-                };
-                context.Orders.Add(order2);
-                context.SaveChanges();
-
-                var photo2a = new Photo { OrderId = order2.OrderId, CustId = cust2.CustId, FileName = "graduation.jpg", FilePath = $"uploads/{order2.OrderId}/graduation.jpg" };
-                var photo2b = new Photo { OrderId = order2.OrderId, CustId = cust2.CustId, FileName = "wedding.jpg", FilePath = $"uploads/{order2.OrderId}/wedding.jpg" };
-                var photo2c = new Photo { OrderId = order2.OrderId, CustId = cust2.CustId, FileName = "portrait.jpg", FilePath = $"uploads/{order2.OrderId}/portrait.jpg" };
-                context.Photos.AddRange(photo2a, photo2b, photo2c);
-                context.SaveChanges();
-
-                var od2 = new List<OrderDetail>
-                {
-                    new OrderDetail { OrderId = order2.OrderId, PhotoId = photo2a.PhotoId, SizeId = size8x10.SizeId,  Quantity = 2, PricePerCopy = size8x10.Price  },
-                    new OrderDetail { OrderId = order2.OrderId, PhotoId = photo2b.PhotoId, SizeId = size10x12.SizeId, Quantity = 1, PricePerCopy = size10x12.Price },
-                    new OrderDetail { OrderId = order2.OrderId, PhotoId = photo2c.PhotoId, SizeId = size5x7.SizeId,   Quantity = 4, PricePerCopy = size5x7.Price   },
-                };
-                context.OrderDetails.AddRange(od2);
-                context.SaveChanges();
-
-                order2.TotalPrice = od2.Sum(d => d.Quantity * d.PricePerCopy);
-                context.SaveChanges();
-
-                context.Payments.Add(new Payment
-                {
-                    OrderId = order2.OrderId,
-                    PaymentMethod = "CreditCard",
-                    CreditCardEncrypted = "ENC:AES256:5500005555555559",
-                    EncryptionMethod = "AES-256",
-                    PaymentDate = order2.OrderDate.AddMinutes(3),
-                    PaymentStatus = "Verified"
-                });
-                context.SaveChanges();
-
-                // ----------------------------------------------------------
-                // ORDER 3 — Processing (direct payment at branch)
-                // ----------------------------------------------------------
-                var order3 = new Order
-                {
-                    CustId = cust3.CustId,
-                    OrderDate = DateTime.Now.AddDays(-3),
-                    TotalPrice = 0,
-                    ShippingAddress = "78 Tran Phu, Da Nang",
-                    Status = "Processing",
-                    ProcessedByAdminId = admins[0].AdminId
-                };
-                context.Orders.Add(order3);
-                context.SaveChanges();
-
-                var photo3a = new Photo { OrderId = order3.OrderId, CustId = cust3.CustId, FileName = "vacation_beach.jpg", FilePath = $"uploads/{order3.OrderId}/vacation_beach.jpg" };
-                var photo3b = new Photo { OrderId = order3.OrderId, CustId = cust3.CustId, FileName = "friends.jpg", FilePath = $"uploads/{order3.OrderId}/friends.jpg" };
-                context.Photos.AddRange(photo3a, photo3b);
-                context.SaveChanges();
-
-                var od3 = new List<OrderDetail>
-                {
-                    new OrderDetail { OrderId = order3.OrderId, PhotoId = photo3a.PhotoId, SizeId = size4x6.SizeId,  Quantity = 5, PricePerCopy = size4x6.Price },
-                    new OrderDetail { OrderId = order3.OrderId, PhotoId = photo3b.PhotoId, SizeId = size4x6.SizeId,  Quantity = 3, PricePerCopy = size4x6.Price },
-                    new OrderDetail { OrderId = order3.OrderId, PhotoId = photo3b.PhotoId, SizeId = size8x10.SizeId, Quantity = 1, PricePerCopy = size8x10.Price },
-                };
-                context.OrderDetails.AddRange(od3);
-                context.SaveChanges();
-
-                order3.TotalPrice = od3.Sum(d => d.Quantity * d.PricePerCopy);
-                context.SaveChanges();
-
-                context.Payments.Add(new Payment
-                {
-                    OrderId = order3.OrderId,
-                    PaymentMethod = "DirectPayment",
-                    CreditCardEncrypted = null,
-                    EncryptionMethod = null,
-                    PaymentDate = order3.OrderDate.AddHours(2),
-                    PaymentStatus = "Verified"
-                });
-                context.SaveChanges();
-
-                // ----------------------------------------------------------
-                // ORDER 4 — Payment Verified (credit card, awaiting processing)
-                // ----------------------------------------------------------
-                var order4 = new Order
-                {
-                    CustId = cust4.CustId,
-                    OrderDate = DateTime.Now.AddDays(-1),
-                    TotalPrice = 0,
-                    ShippingAddress = "33 Hung Vuong, Hue",
-                    Status = "Payment Verified",
+                    CustId          = customer1.CustId,
+                    OrderDate       = DateTime.Now,
+                    TotalPrice      = 0.00m,
+                    ShippingAddress = "12 Ly Thuong Kiet, Ha Noi",
+                    Status          = "Pending",
                     ProcessedByAdminId = null
+                },
                 };
-                context.Orders.Add(order4);
-                context.SaveChanges();
 
-                var photo4a = new Photo { OrderId = order4.OrderId, CustId = cust4.CustId, FileName = "new_year.jpg", FilePath = $"uploads/{order4.OrderId}/new_year.jpg" };
-                context.Photos.Add(photo4a);
-                context.SaveChanges();
+                await context.Orders.AddRangeAsync(orders);
+                await context.SaveChangesAsync();
+            }
 
-                var od4 = new List<OrderDetail>
+            // ============================================================
+            // PHOTOS (4)
+            // ============================================================
+            if (!context.Photos.Any())
+            {
+                var customer1 = await context.Customers.FirstAsync(c => c.Username == "annguyen");
+                var customer2 = await context.Customers.FirstAsync(c => c.Username == "binhtran");
+                var order1 = await context.Orders.FirstAsync(o => o.Status == "Completed");
+
+                var photos = new Photo[]
                 {
-                    new OrderDetail { OrderId = order4.OrderId, PhotoId = photo4a.PhotoId, SizeId = size5x7.SizeId,   Quantity = 2, PricePerCopy = size5x7.Price   },
-                    new OrderDetail { OrderId = order4.OrderId, PhotoId = photo4a.PhotoId, SizeId = size10x12.SizeId, Quantity = 1, PricePerCopy = size10x12.Price },
+                new Photo
+                {
+                    CustId     = customer1.CustId,
+                    FileName   = "photo_001.jpg",
+                    FilePath   = $"uploads/{order1.FolderName}/photo_001.jpg",
+                    UploadDate = DateTime.Now.AddDays(-5)
+                },
+                new Photo
+                {
+                    CustId     = customer1.CustId,
+                    FileName   = "photo_002.jpg",
+                    FilePath   = $"uploads/{order1.FolderName}/photo_002.jpg",
+                    UploadDate = DateTime.Now.AddDays(-5)
+                },
+                new Photo
+                {
+                    CustId     = customer2.CustId,
+                    FileName   = "portrait_01.jpg",
+                    FilePath   = "uploads/folder_0002/portrait_01.jpg",
+                    UploadDate = DateTime.Now.AddDays(-2)
+                },
+                new Photo
+                {
+                    CustId     = customer2.CustId,
+                    FileName   = "family_shot.jpg",
+                    FilePath   = "uploads/folder_0002/family_shot.jpg",
+                    UploadDate = DateTime.Now.AddDays(-2)
+                },
                 };
-                context.OrderDetails.AddRange(od4);
-                context.SaveChanges();
 
-                order4.TotalPrice = od4.Sum(d => d.Quantity * d.PricePerCopy);
-                context.SaveChanges();
+                await context.Photos.AddRangeAsync(photos);
+                await context.SaveChangesAsync();
+            }
 
-                context.Payments.Add(new Payment
+            // ============================================================
+            // ORDER DETAILS
+            // ============================================================
+            if (!context.OrderDetails.Any())
+            {
+                var order1 = await context.Orders.FirstAsync(o => o.Status == "Completed");
+                var order2 = await context.Orders.FirstAsync(o => o.Status == "Payment Verified");
+                var photo1 = await context.Photos.FirstAsync(p => p.FileName == "photo_001.jpg");
+                var photo2 = await context.Photos.FirstAsync(p => p.FileName == "photo_002.jpg");
+                var photo3 = await context.Photos.FirstAsync(p => p.FileName == "portrait_01.jpg");
+                var size4x6 = await context.PrintSizes.FirstAsync(s => s.SizeName == "4x6");
+                var size5x7 = await context.PrintSizes.FirstAsync(s => s.SizeName == "5x7");
+
+                var details = new OrderDetail[]
                 {
-                    OrderId = order4.OrderId,
-                    PaymentMethod = "CreditCard",
-                    CreditCardEncrypted = "ENC:AES256:4012888888881881",
-                    EncryptionMethod = "AES-256",
-                    PaymentDate = order4.OrderDate.AddMinutes(8),
-                    PaymentStatus = "Verified"
-                });
-                context.SaveChanges();
-
-                // ----------------------------------------------------------
-                // ORDER 5 — Pending (just placed, payment not yet submitted)
-                // ----------------------------------------------------------
-                var order5 = new Order
+                new OrderDetail
                 {
-                    CustId = cust5.CustId,
-                    OrderDate = DateTime.Now,
-                    TotalPrice = 0,
-                    ShippingAddress = "21 Dien Bien Phu, Hai Phong",
-                    Status = "Pending",
-                    ProcessedByAdminId = null
+                    OrderId      = order1.OrderId,
+                    PhotoId      = photo1.PhotoId,
+                    SizeId       = size4x6.SizeId,
+                    Quantity     = 2,
+                    PricePerCopy = size4x6.Price
+                },
+                new OrderDetail
+                {
+                    OrderId      = order1.OrderId,
+                    PhotoId      = photo2.PhotoId,
+                    SizeId       = size5x7.SizeId,
+                    Quantity     = 2,
+                    PricePerCopy = size5x7.Price
+                },
+                new OrderDetail
+                {
+                    OrderId      = order2.OrderId,
+                    PhotoId      = photo3.PhotoId,
+                    SizeId       = size4x6.SizeId,
+                    Quantity     = 1,
+                    PricePerCopy = size4x6.Price
+                },
                 };
-                context.Orders.Add(order5);
-                context.SaveChanges();
 
-                var photo5a = new Photo { OrderId = order5.OrderId, CustId = cust5.CustId, FileName = "selfie.jpg", FilePath = $"uploads/{order5.OrderId}/selfie.jpg" };
-                var photo5b = new Photo { OrderId = order5.OrderId, CustId = cust5.CustId, FileName = "landscape.jpg", FilePath = $"uploads/{order5.OrderId}/landscape.jpg" };
-                context.Photos.AddRange(photo5a, photo5b);
-                context.SaveChanges();
+                await context.OrderDetails.AddRangeAsync(details);
+                await context.SaveChangesAsync();
+            }
 
-                var od5 = new List<OrderDetail>
+            // ============================================================
+            // PAYMENTS (2)
+            // ============================================================
+            if (!context.Payments.Any())
+            {
+                var order1 = await context.Orders.FirstAsync(o => o.Status == "Completed");
+                var order2 = await context.Orders.FirstAsync(o => o.Status == "Payment Verified");
+
+                var payments = new Payment[]
                 {
-                    new OrderDetail { OrderId = order5.OrderId, PhotoId = photo5a.PhotoId, SizeId = size4x6.SizeId,  Quantity = 4, PricePerCopy = size4x6.Price  },
-                    new OrderDetail { OrderId = order5.OrderId, PhotoId = photo5b.PhotoId, SizeId = size8x10.SizeId, Quantity = 2, PricePerCopy = size8x10.Price },
+                new Payment
+                {
+                    OrderId               = order1.OrderId,
+                    PaymentMethod         = "CreditCard",
+                    CreditCardEncrypted   = "AES256:encryptedCardDataHere==",
+                    EncryptionMethod      = "AES-256",
+                    PaymentDate           = DateTime.Now.AddDays(-5),
+                    PaymentStatus         = "Verified"
+                },
+                new Payment
+                {
+                    OrderId               = order2.OrderId,
+                    PaymentMethod         = "DirectPayment",
+                    CreditCardEncrypted   = null,
+                    EncryptionMethod      = null,
+                    PaymentDate           = DateTime.Now.AddDays(-2),
+                    PaymentStatus         = "Verified"
+                },
                 };
-                context.OrderDetails.AddRange(od5);
-                context.SaveChanges();
 
-                order5.TotalPrice = od5.Sum(d => d.Quantity * d.PricePerCopy);
-                context.SaveChanges();
-
-                context.Payments.Add(new Payment
-                {
-                    OrderId = order5.OrderId,
-                    PaymentMethod = "DirectPayment",
-                    CreditCardEncrypted = null,
-                    EncryptionMethod = null,
-                    PaymentDate = DateTime.Now,
-                    PaymentStatus = "Pending"
-                });
-                context.SaveChanges();
-
+                await context.Payments.AddRangeAsync(payments);
+                await context.SaveChangesAsync();
             }
         }
     }
