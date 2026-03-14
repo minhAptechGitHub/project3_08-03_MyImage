@@ -13,19 +13,30 @@ const apiService = {
     },
 
     async create(endpoint, data) {
-        try {
-            const response = await fetch(`${Api_Url}/api/${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-            if (!response.ok) throw new Error('Failed to create item');
-            return await response.json();
-        } catch (error) {
-            console.error(`Error creating ${endpoint}:`, error);
-            throw error;
+    try {
+
+        const response = await fetch(`${Api_Url}/api/${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+
+            const errorText = await response.text(); // lấy message server
+
+            console.error(`API ERROR ${endpoint}:`, errorText);
+
+            throw new Error(errorText || 'Failed to create item');
         }
-    },
+
+        return await response.json();
+
+    } catch (error) {
+        console.error(`Error creating ${endpoint}:`, error);
+        throw error;
+    }
+},
 
     async update(endpoint, id, data) {
         try {
