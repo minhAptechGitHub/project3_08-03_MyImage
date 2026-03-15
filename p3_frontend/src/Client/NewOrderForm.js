@@ -95,7 +95,6 @@ function NewOrderForm({ user }) {
     // Submit Order
     // ===============================
     const handleSubmit = async () => {
-
         setError("");
         setSuccess("");
 
@@ -105,12 +104,11 @@ function NewOrderForm({ user }) {
         setLoading(true);
 
         try {
-
-            // STEP 1: create order
+            // STEP 1: create order (Dữ liệu đầy đủ như code gốc của bạn)
             const orderPayload = {
                 custId: user.custId,
                 orderDate: new Date().toISOString(),
-                totalPrice: totalPrice,
+                totalPrice: 0, // Backend sẽ tự cộng dồn khi tạo Detail
                 shippingAddress: user.address || "",
                 status: "Pending",
                 processedByAdminId: null
@@ -119,7 +117,7 @@ function NewOrderForm({ user }) {
             const createdOrder = await apiService.orders.create(orderPayload);
             const orderId = createdOrder.orderId;
 
-            // STEP 2: loop photos
+            // STEP 2: loop photos (Giữ nguyên các bước Upload và Create Photo của bạn)
             for (const p of photos) {
 
                 if (!p.sizeId)
@@ -127,13 +125,14 @@ function NewOrderForm({ user }) {
 
                 const price = getPrice(p.sizeId);
 
-                // upload file
+                // 2.1 Upload file thực tế
                 const formData = new FormData();
                 formData.append("file", p.file);
-                formData.append("orderId", orderId);
+                formData.append("orderId", orderId); // Cần thiết để upload thành công
 
                 const uploadResult = await apiService.photos.upload(formData);
 
+                // 2.2 Tạo record Photo trong DB
                 const photoPayload = {
                     custId: user.custId,
                     fileName: uploadResult.fileName,
@@ -143,7 +142,8 @@ function NewOrderForm({ user }) {
 
                 const createdPhoto = await apiService.photos.create(photoPayload);
 
-                // create order detail
+                // 2.3 Tạo order detail
+                // Backend mới của bạn sẽ tự động update TotalPrice cho Order ngay khi dòng này chạy xong
                 await apiService.orderDetails.create({
                     orderId: orderId,
                     photoId: createdPhoto.photoId,
@@ -153,20 +153,19 @@ function NewOrderForm({ user }) {
                 });
             }
 
+            // Thông báo thành công kèm mã Order
             setSuccess(`Order #${orderId} placed successfully!`);
             setPhotos([]);
 
         } catch (err) {
-
-    console.error("FULL ERROR:", err);
-
-    if (err.response) {
-        console.error("API ERROR:", err.response.data);
-        setError(err.response.data.message || "Server error");
-    } else {
-        setError(err.message);
-    }
-
+            // GIỮ NGUYÊN ĐOẠN XỬ LÝ LỖI CHI TIẾT CỦA BẠN
+            console.error("FULL ERROR:", err);
+            if (err.response) {
+                console.error("API ERROR:", err.response.data);
+                setError(err.response.data.message || "Server error");
+            } else {
+                setError(err.message);
+            }
         } finally {
             setLoading(false);
         }

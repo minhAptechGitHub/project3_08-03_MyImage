@@ -77,8 +77,22 @@ namespace p3_backend.Controllers
         [HttpPost]
         public async Task<ActionResult<OrderDetail>> PostOrderDetail(OrderDetail orderDetail)
         {
+            // 1. Tính toán LineTotal cho Detail trước khi lưu (phòng hờ React gửi thiếu)
+            orderDetail.LineTotal = orderDetail.Quantity * orderDetail.PricePerCopy;
+
             _context.OrderDetails.Add(orderDetail);
             await _context.SaveChangesAsync();
+
+            // 2. TỰ ĐỘNG CẬP NHẬT TỔNG TIỀN CHO ORDER CHA
+            var order = await _context.Orders.FindAsync(orderDetail.OrderId);
+            if (order != null)
+            {
+                // Cộng dồn: Tổng cũ + (Số lượng * Đơn giá của tấm ảnh vừa thêm)
+                order.TotalPrice = (order.TotalPrice) + (orderDetail.Quantity * orderDetail.PricePerCopy);
+
+                _context.Entry(order).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
 
             return CreatedAtAction("GetOrderDetail", new { id = orderDetail.OrderDetailId }, orderDetail);
         }

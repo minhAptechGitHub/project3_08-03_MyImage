@@ -27,6 +27,7 @@ namespace p3_backend.Controllers
         {
             return await _context.Orders
                 .Include(o => o.Cust)
+                .Include(o => o.OrderDetails)
                 .ToListAsync();
         }
 
@@ -50,34 +51,41 @@ namespace p3_backend.Controllers
         {
             if (orderDto == null) return BadRequest("Data is null");
 
-            // 1. Chuyển đổi từ DTO sang Model gốc (Entity)
+            // 1. Khởi tạo Order Entity
             var order = new Order
             {
                 CustId = orderDto.CustId,
                 ShippingAddress = orderDto.ShippingAddress,
                 Status = orderDto.Status ?? "Pending",
                 OrderDate = DateTime.Now,
-                TotalPrice = 0 
+                TotalPrice = 0 // Mặc định là 0, sẽ tính ở dưới
             };
 
-            // 2. Xử lý OrderDetails nếu có gửi kèm trong JSON
+            // 2. Xử lý tính toán tiền bạc (Logic quan trọng)
             if (orderDto.OrderDetails != null && orderDto.OrderDetails.Any())
             {
-                decimal total = 0;
+                decimal runningTotal = 0;
+
                 foreach (var item in orderDto.OrderDetails)
                 {
+                    // Tính toán LineTotal dựa trên dữ liệu thực tế từ DTO
+                    decimal currentLineTotal = (item.Quantity > 0 ? item.Quantity : 1) * item.PricePerCopy;
+
                     var detail = new OrderDetail
                     {
                         PhotoId = item.PhotoId,
                         SizeId = item.SizeId,
                         Quantity = item.Quantity,
                         PricePerCopy = item.PricePerCopy,
-                        LineTotal = item.Quantity * item.PricePerCopy
+                        LineTotal = currentLineTotal
                     };
-                    total += detail.LineTotal ?? 0;
+
+                    runningTotal += currentLineTotal;
                     order.OrderDetails.Add(detail);
                 }
-                order.TotalPrice = total;
+
+                // Gán tổng tiền sau khi đã duyệt hết danh sách ảnh
+                order.TotalPrice = runningTotal;
             }
 
             // 3. Lưu vào Database
@@ -86,13 +94,15 @@ namespace p3_backend.Controllers
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
 
-                // Load lại để lấy FolderName (Computed column) từ DB
+                // Load lại để lấy FolderName (Computed) và các dữ liệu phát sinh từ DB
                 await _context.Entry(order).ReloadAsync();
 
+                // Trả về Order đã có đầy đủ ID và TotalPrice
                 return CreatedAtAction("GetOrder", new { id = order.OrderId }, order);
             }
             catch (Exception ex)
             {
+                // Log lỗi chi tiết nếu có
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
