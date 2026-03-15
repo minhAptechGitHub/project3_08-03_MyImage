@@ -4,8 +4,9 @@ import './AdminPage.css';
 import { tableConfig } from './Tableconfig';
 import { formatValue } from './Utils';
 import CreateEditModal from './Modal';
+import StatusChange from './StatusChange';
 
-function AdminPage({user, onLogout}) {
+function AdminPage({ user, onLogout }) {
     const [activeTab, setActiveTab] = useState('customers');
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -36,7 +37,7 @@ function AdminPage({user, onLogout}) {
         setError(null);
         try {
             const result = await apiService[activeTab].getAll();
-            console.log(apiService[activeTab].getAll())
+            // console.log(result)
             setData(result);
             setCurrentPage(1);
         } catch (err) {
@@ -109,12 +110,24 @@ function AdminPage({user, onLogout}) {
                         </thead>
                         <tbody>
                             {currentRows.length > 0 ? (
-                                console.log(currentRows),
+                                // console.log(currentRows),
                                 currentRows.map((item, index) => (
                                     <tr key={index}>
-                                        {currentTable.columns.map((col) => (
-                                            <td key={col.key}>{formatValue(item[col.key], col)}</td>
-                                        ))}
+                                        {currentTable.columns.map((col) => {
+                                            if (col.key === 'status') {
+                                                // console.log(currentTable.columns)
+                                                return <td key={'status'}>
+                                                    <StatusChange
+                                                        col={col}
+                                                        value={formatValue(item[col.key], col)}
+                                                        // error={errors[col.key]}
+                                                        id={item.orderId}
+                                                        fetchData={fetchData}
+                                                    />
+                                                </td>
+                                            }
+                                            return <td key={col.key}>{formatValue(item[col.key], col)}</td>
+                                        })}
                                         <td>
                                             <div className="action-buttons">
                                                 <button className="btn-edit" onClick={() => handleOpenModal('edit', item)}>

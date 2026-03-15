@@ -62,7 +62,7 @@ function Register({ onGoLogin }) {
         }
         setLoading(true);
         try {
-            console.log(form)
+            // console.log(form)
             await apiService.customers.create({ ...form, isActive: true });
             onGoLogin({ success: 'Account created! You can now login as ' + form.username + ', mk:' + form.password });
         } catch {

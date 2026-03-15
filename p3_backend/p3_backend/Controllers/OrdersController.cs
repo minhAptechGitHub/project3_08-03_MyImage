@@ -143,5 +143,37 @@ namespace p3_backend.Controllers
 
             return Ok(orders);
         }
+
+        // PUT: api/Orders/Status/{id}
+        [HttpPut("Status/{id}")]
+        public async Task<IActionResult> PutStatus(int id, [FromBody] string status)
+        {
+            var order = await _context.Orders.FindAsync(id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            order.Status = status;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!OrderExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
     }
 }

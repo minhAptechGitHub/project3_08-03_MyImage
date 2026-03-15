@@ -85,6 +85,21 @@ const apiService = {
         }
     },
 
+    async updateStatus(endpoint, id, status) {
+        try {
+            const response = await fetch(`${Api_Url}/api/${endpoint}/Status/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(status),
+            });
+            if (!response.ok) throw new Error('Failed to update status');
+            return response.status === 204 ? {} : await response.json();
+        } catch (error) {
+            console.error(`Error updating ${endpoint}/${id}:`, error);
+            throw error;
+        }
+    },
+
     // Customers endpoints
     customers: {
         getAll: () => apiService.get('Customers'),
@@ -124,6 +139,7 @@ const apiService = {
         update: (id, data) => apiService.update('Orders', id, data),
         delete: (id) => apiService.delete('Orders', id),
         getByCustomer: (custId) => apiService.get(`Orders/customer/${custId}/details`),
+        updateStatus: (id, status) => apiService.updateStatus('Orders', id, status)
     },
     // OrderDetails endpoints
     orderDetails: {
