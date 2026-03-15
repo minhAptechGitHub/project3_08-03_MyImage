@@ -78,7 +78,31 @@ function OrderList({ user }) {
                                         order.orderDetails.map(od => (
                                             <tr key={od.orderDetailId}>
                                                 <td>{od.orderDetailId}</td>
-                                                <td>{od.photo.photoId}</td>
+                                                <td style={{ textAlign: 'center', width: '80px', padding: '5px' }}>
+                                                    {od.photo && od.photo.filePath ? (
+                                                        <img
+                                                            // Dùng encodeURI để xử lý các ký tự tiếng Việt/khoảng trắng trong tên file
+                                                            src={encodeURI(`http://localhost:5002/${od.photo.filePath}`)}
+                                                            alt="Thumb"
+                                                            style={{
+                                                                width: '120px',
+                                                                height: '90px',
+                                                                objectFit: 'cover',
+                                                                borderRadius: '5px',
+                                                                border: '1px solid #eee',
+                                                                display: 'block',
+                                                                margin: '0 auto'
+                                                            }}
+                                                            onError={(e) => {
+                                                                // Quan trọng: Gỡ bỏ onError sau khi chạy lần đầu để tránh vòng lặp giật giật
+                                                                e.target.onerror = null;
+                                                                e.target.src = "https://via.placeholder.com/60?text=No+Img";
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        "N/A"
+                                                    )}
+                                                </td>
                                                 <td>
                                                     <a
                                                         href={`http://localhost:5002/${od.photo.filePath}`}

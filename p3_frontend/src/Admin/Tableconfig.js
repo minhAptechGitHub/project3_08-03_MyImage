@@ -100,6 +100,7 @@ export const tableConfig = [
         columns: [
             { key: 'photoId',    label: 'Photo ID',    required: true,  isPrimaryKey: true, readOnly: true },
             { key: 'custId',     label: 'Customer ID', required: true,  inputType: 'number', min: 1 },
+            { key: 'preview',    label: 'Photo',   hideInModal: true },
             { key: 'fileName',   label: 'File Name',   required: true,  maxLength: 255 },
             { key: 'filePath',   label: 'File Path',   required: true,  maxLength: 500 },
             { key: 'uploadDate', label: 'Upload Date', required: false, readOnly: true, isDate: true },

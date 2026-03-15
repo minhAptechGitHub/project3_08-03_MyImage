@@ -122,28 +122,34 @@ namespace p3_backend.Controllers
             var file = request.File;
             var orderId = request.OrderId;
 
-            // 1. Get the order to read its computed folder_name (e.g. "folder_0001")
             var order = await _context.Orders.FindAsync(orderId);
             if (order == null)
                 return NotFound($"Order {orderId} not found.");
 
-            string folderName = order.FolderName; // persisted computed column from DB
+            string folderName = order.FolderName; 
 
-            // 2. Build save path: wwwroot/uploads/folder_XXXX/
             string uploadRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", folderName);
-            Directory.CreateDirectory(uploadRoot); // creates the folder if it doesn't exist
+            Directory.CreateDirectory(uploadRoot);
 
-            // 3. Sanitize filename and build full path
-            string fileName = Path.GetFileName(file.FileName);
+            // --- BẮT ĐẦU SỬA TỪ ĐÂY ---
+            
+            // 1. Lấy đuôi file gốc (ví dụ: .jpg, .png)
+            string extension = Path.GetExtension(file.FileName);
+            
+            // 2. Tạo tên file mới bằng mã GUID để không bao giờ trùng và không có dấu
+            // Kết quả sẽ dạng: 7492cf51-6670-466d-8057-074495f79574.jpg
+            string fileName = $"{Guid.NewGuid()}{extension}";
+            
+            // 3. Kết hợp đường dẫn
             string fullPath = Path.Combine(uploadRoot, fileName);
 
-            // 4. Write file to disk
+            // --- KẾT THÚC SỬA ---
+
             using (var stream = new FileStream(fullPath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            // 5. Return relative path for storing in Photos table
             string relativeFilePath = $"uploads/{folderName}/{fileName}";
 
             return Ok(new

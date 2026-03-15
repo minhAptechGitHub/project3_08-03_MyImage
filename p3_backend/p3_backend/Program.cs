@@ -46,7 +46,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-//app.UseStaticFiles(); // serves wwwroot/uploads/ as public URLs
+app.UseStaticFiles(); // serves wwwroot/uploads/ as public URLs
 
 app.UseAuthorization();
 
