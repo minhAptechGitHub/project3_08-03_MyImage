@@ -1,0 +1,143 @@
+/* ModalSelect.css */
+
+/* ── Trigger button ── */
+.modal-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.modal-select-trigger.open {
+    border-color: #7f77dd;
+    box-shadow: 0 0 0 3px rgba(127, 119, 221, 0.18);
+}
+
+.modal-select-trigger .ms-arrow {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+    transition: transform 0.2s;
+}
+
+.modal-select-trigger.open .ms-arrow {
+    transform: rotate(180deg);
+}
+
+/* ── Backdrop ── */
+.ms-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+/* ── Modal container ── */
+.ms-modal {
+    background: var(--color-background-primary);
+    background-color: white;
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 12px;
+    width: 300px;
+    overflow: hidden;
+}
+
+/* ── Modal header ── */
+.ms-modal-header {
+    padding: 14px 16px 10px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+/* ── Options list ── */
+.ms-list {
+    padding: 8px;
+}
+
+.ms-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.1s;
+    background: transparent;
+}
+
+.ms-option:hover {
+    background: var(--color-background-secondary);
+}
+
+.ms-option.selected {
+    background: var(--color-background-secondary);
+}
+
+.ms-check {
+    margin-left: auto;
+    background-color: black;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ── Status badge ── */
+.ms-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.ms-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ── Modal footer ── */
+.ms-footer {
+    padding: 10px 16px;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* ── Buttons ── */
+.ms-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    transition: background 0.1s;
+}
+
+.ms-btn:hover {
+    background: var(--color-background-secondary);
+}
+
+.ms-btn.primary {
+    background: #7f77dd;
+    color: #fff;
+    border-color: #7f77dd;
+}
+
+.ms-btn.primary:hover {
+    background: #534ab7;
+    border-color: #534ab7;
+}
