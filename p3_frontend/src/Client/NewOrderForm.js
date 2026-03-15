@@ -1,17 +1,15 @@
 import { useState, useEffect } from "react";
 import apiService from "../Admin/Services";
-import './NewOrderForm.css';
+import "./NewOrderForm.css";
 
 function NewOrderForm({ user }) {
-    const [file, setFile] = useState(null);
-    const [preview, setPreview] = useState(null);
-    const [selectedSize, setSelectedSize] = useState('');
-    const [quantity, setQuantity] = useState(1);
+
+    const [photos, setPhotos] = useState([]);
     const [sizes, setSizes] = useState([]);
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     useEffect(() => {
         fetchSizes();
@@ -22,178 +20,279 @@ function NewOrderForm({ user }) {
             const result = await apiService.printSizes.getAll();
             setSizes(result.filter(s => s.isAvailable));
         } catch (err) {
-            console.error('Error fetching sizes:', err);
+            console.error("Error fetching sizes:", err);
         }
     };
 
+    // ===============================
+    // Upload multiple photos
+    // ===============================
     const handleFileChange = (e) => {
-        const selected = e.target.files[0];
-        if (!selected) return;
-        setFile(selected);
-        setPreview(URL.createObjectURL(selected));
-        setError('');
+
+        const files = Array.from(e.target.files);
+
+        const newPhotos = files.map(file => ({
+            file,
+            preview: URL.createObjectURL(file),
+            sizeId: "",
+            quantity: 1
+        }));
+
+        setPhotos(prev => [...prev, ...newPhotos]);
+        setError("");
     };
 
-    // Returns the price of the currently selected size
-    const getSelectedPrice = () => {
-        const size = sizes.find(s => s.sizeId === parseInt(selectedSize));
+    // ===============================
+    // Change size
+    // ===============================
+    const handleSizeChange = (index, sizeId) => {
+
+        const updated = [...photos];
+        updated[index].sizeId = sizeId;
+
+        setPhotos(updated);
+    };
+
+    // ===============================
+    // Change quantity
+    // ===============================
+    const handleQuantityChange = (index, qty) => {
+
+        const updated = [...photos];
+        updated[index].quantity = qty;
+
+        setPhotos(updated);
+    };
+
+    // ===============================
+    // Remove photo
+    // ===============================
+    const removePhoto = (index) => {
+
+        const updated = [...photos];
+        updated.splice(index, 1);
+
+        setPhotos(updated);
+    };
+
+    // ===============================
+    // Get price by size
+    // ===============================
+    const getPrice = (sizeId) => {
+
+        const size = sizes.find(s => s.sizeId === parseInt(sizeId));
         return size ? size.price : 0;
     };
 
-    // ============================================================
-    // SUBMIT: Order → Upload Photo → Photo record → OrderDetail
-    // ============================================================
+    // ===============================
+    // Calculate total price
+    // ===============================
+    const totalPrice = photos.reduce((sum, p) => {
+        return sum + getPrice(p.sizeId) * p.quantity;
+    }, 0);
+
+    // ===============================
+    // Submit Order
+    // ===============================
     const handleSubmit = async () => {
-        setError('');
-        setSuccess('');
 
-        // --- Validation ---
-        if (!file) return setError('Please select a photo.');
-        if (!selectedSize) return setError('Please select a print size.');
-        if (quantity < 1) return setError('Quantity must be at least 1.');
+        setError("");
+        setSuccess("");
 
-        const pricePerCopy = getSelectedPrice();
-        const totalPrice = pricePerCopy * quantity;
+        if (photos.length === 0)
+            return setError("Please upload at least one photo.");
 
         setLoading(true);
+
         try {
-            // ── STEP 1: Create Order ──────────────────────────────
+
+            // STEP 1: create order
             const orderPayload = {
                 custId: user.custId,
                 orderDate: new Date().toISOString(),
                 totalPrice: totalPrice,
-                shippingAddress: user.address || '',
-                status: 'Pending',
+                shippingAddress: user.address || "",
+                status: "Pending",
                 processedByAdminId: null
-                // folder_name is computed by DB (persisted column), no need to send
             };
 
             const createdOrder = await apiService.orders.create(orderPayload);
             const orderId = createdOrder.orderId;
 
-            // ── STEP 2: Upload photo file to backend folder ───────
-            // Backend should save it to uploads/folder_XXXX/<filename>
-            // and return the saved file path
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('orderId', orderId);
+            // STEP 2: loop photos
+            for (const p of photos) {
 
-            const uploadResult = await apiService.photos.upload(formData);
-            // Expected response: { filePath: "uploads/folder_0001/photo.jpg", fileName: "photo.jpg" }
-            const { filePath, fileName } = uploadResult;
+                if (!p.sizeId)
+                    throw new Error("Please select size for all photos");
 
-            // ── STEP 3: Create Photo record ───────────────────────
-            const photoPayload = {
-                custId: user.custId,
-                fileName: fileName,
-                filePath: filePath,
-                uploadDate: new Date().toISOString()
-            };
+                const price = getPrice(p.sizeId);
 
-            const createdPhoto = await apiService.photos.create(photoPayload);
-            const photoId = createdPhoto.photoId;
+                // upload file
+                const formData = new FormData();
+                formData.append("file", p.file);
+                formData.append("orderId", orderId);
 
-            // ── STEP 4: Create OrderDetail record ─────────────────
-            const detailPayload = {
-                orderId: orderId,
-                photoId: photoId,
-                sizeId: parseInt(selectedSize),
-                quantity: parseInt(quantity),
-                pricePerCopy: pricePerCopy
-                // line_total is computed by DB (persisted column), no need to send
-            };
+                const uploadResult = await apiService.photos.upload(formData);
 
-            await apiService.orderDetails.create(detailPayload);
+                const photoPayload = {
+                    custId: user.custId,
+                    fileName: uploadResult.fileName,
+                    filePath: uploadResult.filePath,
+                    uploadDate: new Date().toISOString()
+                };
 
-            // ── Done ──────────────────────────────────────────────
+                const createdPhoto = await apiService.photos.create(photoPayload);
+
+                // create order detail
+                await apiService.orderDetails.create({
+                    orderId: orderId,
+                    photoId: createdPhoto.photoId,
+                    sizeId: parseInt(p.sizeId),
+                    quantity: parseInt(p.quantity),
+                    pricePerCopy: price
+                });
+            }
+
             setSuccess(`Order #${orderId} placed successfully!`);
-            setFile(null);
-            setPreview(null);
-            setSelectedSize('');
-            setQuantity(1);
+            setPhotos([]);
 
         } catch (err) {
-            console.error('Order submission failed:', err);
-            setError('Something went wrong. Please try again.');
+
+    console.error("FULL ERROR:", err);
+
+    if (err.response) {
+        console.error("API ERROR:", err.response.data);
+        setError(err.response.data.message || "Server error");
+    } else {
+        setError(err.message);
+    }
+
         } finally {
             setLoading(false);
         }
     };
 
-    // ── Derived values for display ────────────────────────────────
-    const pricePerCopy = getSelectedPrice();
-    const totalPrice = pricePerCopy * quantity;
-
     return (
-        <div>
-            <h2 className="section-title">New Order</h2>
-            <p className="section-description">Upload a photo, choose a print size and quantity, then place your order.</p>
 
-            {/* Error / Success feedback */}
+        <div>
+
+            <h2 className="section-title">New Order</h2>
+
+            <p className="section-description">
+                Upload photos, choose sizes and quantity, then place your order.
+            </p>
+
             {error && <p className="alert alert-error">{error}</p>}
             {success && <p className="alert alert-success">{success}</p>}
 
-            {/* 1. File picker */}
+            {/* Upload */}
             <div className="form-group">
-                <label className="form-label">Select Photo</label>
-                <input type="file" accept="image/*" onChange={handleFileChange} />
-                {preview && (
-                    <div className="photo-preview">
-                        <img src={preview} alt="preview" />
-                    </div>
-                )}
-            </div>
 
-            {/* 2. Size picker */}
-            <div className="form-group">
-                <label className="form-label">Print Size</label>
-                <select
-                    className="form-select"
-                    value={selectedSize}
-                    onChange={(e) => setSelectedSize(e.target.value)}
-                >
-                    <option value="">-- Select Size --</option>
-                    {sizes.map((s) => (
-                        <option key={s.sizeId} value={s.sizeId}>
-                            {s.sizeName} — {s.price.toLocaleString()} VND
-                        </option>
-                    ))}
-                </select>
-            </div>
+                <label className="form-label">Select Photos</label>
 
-            {/* 3. Quantity */}
-            <div className="form-group">
-                <label className="form-label">Quantity</label>
                 <input
-                    className="form-input"
-                    type="number"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileChange}
                 />
+
             </div>
 
-            {/* 4. Price summary */}
-            {selectedSize && (
+            {/* Photos */}
+            <div className="photo-grid">
+
+                {photos.map((p, index) => {
+
+                    const price = getPrice(p.sizeId);
+                    const lineTotal = price * p.quantity;
+
+                    return (
+
+                        <div key={index} className="photo-card">
+
+                            <img src={p.preview} alt="preview" />
+
+                            <select
+                                className="form-select"
+                                value={p.sizeId}
+                                onChange={(e) => handleSizeChange(index, e.target.value)}
+                            >
+
+                                <option value="">Select Size</option>
+
+                                {sizes.map(s => (
+
+                                    <option key={s.sizeId} value={s.sizeId}>
+                                        {s.sizeName} — {s.price.toLocaleString()} VND
+                                    </option>
+
+                                ))}
+
+                            </select>
+
+                            <input
+                                type="number"
+                                min="1"
+                                className="form-input"
+                                value={p.quantity}
+                                onChange={(e) => handleQuantityChange(index, e.target.value)}
+                            />
+
+                            <div className="line-price">
+                                {lineTotal.toLocaleString()} VND
+                            </div>
+
+                            <button
+                                className="btn-remove"
+                                onClick={() => removePhoto(index)}
+                            >
+                                Remove
+                            </button>
+
+                        </div>
+                    );
+
+                })}
+
+            </div>
+
+            {/* Total */}
+            {photos.length > 0 && (
+
                 <div className="price-summary">
+
                     <div className="price-item">
-                        <span className="price-label">Price per copy</span>
-                        <span className="price-value">{pricePerCopy.toLocaleString()} VND</span>
-                    </div>
-                    <div className="price-item">
+
                         <span className="price-label">Total</span>
-                        <span className="price-value price-total">{totalPrice.toLocaleString()} VND</span>
+
+                        <span className="price-value price-total">
+                            {totalPrice.toLocaleString()} VND
+                        </span>
+
                     </div>
+
                 </div>
+
             )}
 
-            {/* 5. Submit */}
+            {/* Submit */}
             <div className="action-bar">
-                <button className="btn-add" onClick={handleSubmit} disabled={loading}>
-                    {loading ? 'Placing Order...' : 'Order'}
+
+                <button
+                    className="btn-add"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                >
+
+                    {loading ? "Placing Order..." : "Order"}
+
                 </button>
+
             </div>
+
         </div>
+
     );
 }
 
