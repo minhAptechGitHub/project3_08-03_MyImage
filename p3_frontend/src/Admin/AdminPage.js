@@ -114,19 +114,48 @@ function AdminPage({ user, onLogout }) {
                                 currentRows.map((item, index) => (
                                     <tr key={index}>
                                         {currentTable.columns.map((col) => {
+                                            // 1. Giữ nguyên logic status cho bảng Orders
                                             if (col.key === 'status') {
-                                                // console.log(currentTable.columns)
-                                                return <td key={'status'}>
-                                                    <StatusChange
-                                                        col={col}
-                                                        value={formatValue(item[col.key], col)}
-                                                        // error={errors[col.key]}
-                                                        id={item.orderId}
-                                                        fetchData={fetchData}
-                                                    />
-                                                </td>
+                                                return (
+                                                    <td key={'status'}>
+                                                        <StatusChange
+                                                            col={col}
+                                                            value={formatValue(item[col.key], col)}
+                                                            id={item.orderId}
+                                                            fetchData={fetchData}
+                                                        />
+                                                    </td>
+                                                );
                                             }
-                                            return <td key={col.key}>{formatValue(item[col.key], col)}</td>
+
+                                            // 2. CHÈN THÊM: Logic hiển thị ảnh cho bảng Photos
+                                            if (col.key === 'preview') {
+                                                return (
+                                                    <td key="preview" style={{ textAlign: 'center' }}>
+                                                        {item.filePath ? (
+                                                            <img
+                                                                src={`http://localhost:5002/${item.filePath}`}
+                                                                alt="Thumb"
+                                                                style={{
+                                                                    width: '200px',
+                                                                    height: '150px',
+                                                                    objectFit: 'cover',
+                                                                    borderRadius: '4px',
+                                                                    border: '1px solid #ddd',
+                                                                    display: 'block',
+                                                                    margin: '0 auto'
+                                                                }}
+                                                                onError={(e) => {
+                                                                    e.target.onerror = null;
+                                                                    e.target.src = "https://via.placeholder.com/50?text=No+Img";
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                    </td>
+                                                );
+                                            }
+
+                                            return <td key={col.key}>{formatValue(item[col.key], col)}</td>;
                                         })}
                                         <td>
                                             <div className="action-buttons">
