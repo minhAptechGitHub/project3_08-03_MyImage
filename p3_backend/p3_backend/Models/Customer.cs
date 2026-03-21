@@ -7,23 +7,23 @@ public partial class Customer
 {
     public int CustId { get; set; }
 
-    public string FName { get; set; } = null!;
+    public string FName { get; set; }
 
-    public string LName { get; set; } = null!;
+    public string LName { get; set; }
 
     public DateOnly? Dob { get; set; }
 
-    public string? Gender { get; set; }
+    public string Gender { get; set; }
 
-    public string? PNo { get; set; }
+    public string PNo { get; set; }
 
-    public string? Address { get; set; }
+    public string Address { get; set; }
 
-    public string Email { get; set; } = null!;
+    public string Email { get; set; }
 
-    public string Username { get; set; } = null!;
+    public string Username { get; set; }
 
-    public string Password { get; set; } = null!;
+    public string Password { get; set; }
 
     public bool IsActive { get; set; }
 

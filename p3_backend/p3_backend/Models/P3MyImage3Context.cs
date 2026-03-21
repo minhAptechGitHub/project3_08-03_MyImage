@@ -33,17 +33,13 @@ public partial class P3MyImage3Context : DbContext
 
     public virtual DbSet<ProductTemplate> ProductTemplates { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-QTOTRGR\\MSSQLSERVER01;Database=p3_MyImage_3;Trusted_Connection=True;TrustServerCertificate=True;");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Admin>(entity =>
         {
-            entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA41418A20AB28");
+            entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA4141082751F8");
 
-            entity.HasIndex(e => e.Username, "UQ__Admins__F3DBC57241A85A64").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Admins__F3DBC57220EB5890").IsUnique();
 
             entity.Property(e => e.AdminId).HasColumnName("admin_id");
             entity.Property(e => e.CreatedAt)
@@ -64,11 +60,11 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.CustId).HasName("PK__Customer__A1B71F90D53671E9");
+            entity.HasKey(e => e.CustId).HasName("PK__Customer__A1B71F9008AF352D");
 
-            entity.HasIndex(e => e.Email, "UQ__Customer__AB6E6164F93EE4D1").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Customer__AB6E6164346F7110").IsUnique();
 
-            entity.HasIndex(e => e.Username, "UQ__Customer__F3DBC57212EC69BD").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Customer__F3DBC5724C68D63C").IsUnique();
 
             entity.Property(e => e.CustId).HasColumnName("cust_id");
             entity.Property(e => e.Address)
@@ -118,9 +114,9 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("PK__Orders__46596229A75CC96B");
+            entity.HasKey(e => e.OrderId).HasName("PK__Orders__465962292ED791DD");
 
-            entity.HasIndex(e => e.FolderName, "UQ__Orders__3AFC5A91806EDB5D").IsUnique();
+            entity.HasIndex(e => e.FolderName, "UQ__Orders__3AFC5A9105B1ACE4").IsUnique();
 
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.CustId).HasColumnName("cust_id");
@@ -160,7 +156,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
-            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__3C5A408080210A73");
+            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__3C5A4080731C6E7C");
 
             entity.Property(e => e.OrderDetailId).HasColumnName("order_detail_id");
             entity.Property(e => e.LineTotal)
@@ -189,17 +185,24 @@ public partial class P3MyImage3Context : DbContext
 
             entity.HasOne(d => d.Size).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.SizeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_OrderDetails_PrintSizes");
         });
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EA2A9A6BD3");
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EA0798E46A");
 
-            entity.HasIndex(e => e.OrderId, "UQ__Payments__4659622816312794").IsUnique();
+            entity.HasIndex(e => e.OrderId, "UQ__Payments__465962282B0C99B1").IsUnique();
 
             entity.Property(e => e.PaymentId).HasColumnName("payment_id");
+            entity.Property(e => e.CreditCardEncrypted)
+                .HasMaxLength(500)
+                .IsUnicode(false)
+                .HasColumnName("credit_card_encrypted");
+            entity.Property(e => e.EncryptionMethod)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("encryption_method");
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.PaymentDate)
                 .HasDefaultValueSql("(getdate())")
@@ -224,7 +227,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<Photo>(entity =>
         {
-            entity.HasKey(e => e.PhotoId).HasName("PK__Photos__CB48C83D9D6F6B9D");
+            entity.HasKey(e => e.PhotoId).HasName("PK__Photos__CB48C83D07463E73");
 
             entity.Property(e => e.PhotoId).HasColumnName("photo_id");
             entity.Property(e => e.CustId).HasColumnName("cust_id");
@@ -250,7 +253,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<PrintSize>(entity =>
         {
-            entity.HasKey(e => e.SizeId).HasName("PK__PrintSiz__0DCACE3112076844");
+            entity.HasKey(e => e.SizeId).HasName("PK__PrintSiz__0DCACE319866020C");
 
             entity.Property(e => e.SizeId).HasColumnName("size_id");
             entity.Property(e => e.CreatedAt)
@@ -277,11 +280,14 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<ProductGallery>(entity =>
         {
-            entity.HasKey(e => e.GalleryId).HasName("PK__ProductG__43D54A71155DA46E");
+            entity.HasKey(e => e.GalleryId).HasName("PK__ProductG__43D54A71596AAEB7");
 
             entity.ToTable("ProductGallery");
 
             entity.Property(e => e.GalleryId).HasColumnName("gallery_id");
+            entity.Property(e => e.Caption)
+                .HasMaxLength(255)
+                .HasColumnName("caption");
             entity.Property(e => e.ImageUrl)
                 .IsRequired()
                 .HasMaxLength(500)
@@ -296,7 +302,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<ProductTemplate>(entity =>
         {
-            entity.HasKey(e => e.TemplateId).HasName("PK__ProductT__BE44E07907D37335");
+            entity.HasKey(e => e.TemplateId).HasName("PK__ProductT__BE44E079598D3B26");
 
             entity.Property(e => e.TemplateId).HasColumnName("template_id");
             entity.Property(e => e.Details).HasColumnName("details");
