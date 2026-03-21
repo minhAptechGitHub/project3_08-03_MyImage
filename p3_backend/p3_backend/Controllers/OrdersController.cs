@@ -81,7 +81,7 @@ namespace p3_backend.Controllers
         {
             var order = await _context.Orders
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Photo)
+                    .ThenInclude(od => od.Photo)
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Size)
                 .FirstOrDefaultAsync(o => o.OrderId == id);
@@ -133,9 +133,7 @@ namespace p3_backend.Controllers
             {
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
-
                 await _context.Entry(order).ReloadAsync();
-
                 return CreatedAtAction("GetOrder", new { id = order.OrderId }, order);
             }
             catch (Exception ex)
@@ -200,7 +198,7 @@ namespace p3_backend.Controllers
                         od.PricePerCopy,
                         od.LineTotal,
                         od.NoteToAdmin,
-                        Photo = new { od.Photo.PhotoId, od.Photo.FileName, od.Photo.FilePath },
+                        Photo = od.Photo == null ? null : new { od.Photo.PhotoId, od.Photo.FileName, od.Photo.FilePath },
                         Size = od.Size == null ? null : new { od.Size.SizeId, od.Size.SizeName, od.Size.Price }
                     }).ToList()
                 })
@@ -215,7 +213,6 @@ namespace p3_backend.Controllers
         public async Task<IActionResult> PutStatus(int id, [FromBody] string status)
         {
             var order = await _context.Orders.FindAsync(id);
-
             if (order == null) return NotFound();
 
             order.Status = status;
@@ -252,20 +249,32 @@ namespace p3_backend.Controllers
 
                     if (photo != null)
                     {
+                        // FilePath dạng: uploads/user/{folderName}/{fileName}
                         var normalized = photo.FilePath.Replace("\\", "/");
                         var parts = normalized.Split('/');
-                        if (parts.Length >= 2)
-                            folderName = parts[parts.Length - 2];
+                        // parts[0]=uploads, parts[1]=user, parts[2]=folderName
+                        if (parts.Length >= 4)
+                            folderName = parts[2];
                     }
                 }
 
                 if (string.IsNullOrEmpty(folderName)) return;
 
-                var uploadsRoot = Path.Combine(_env.WebRootPath ?? _env.ContentRootPath, "uploads");
-                var folderPath = Path.Combine(uploadsRoot, folderName);
+                // Đúng: uploads/user/{folderName}
+                var webRoot = _env.WebRootPath ?? _env.ContentRootPath;
+                var folderPath = Path.Combine(webRoot, "uploads", "user", folderName);
+
+                Console.WriteLine($"[DeletePhotoFolder] Tìm folder: {folderPath}");
 
                 if (Directory.Exists(folderPath))
+                {
                     Directory.Delete(folderPath, recursive: true);
+                    Console.WriteLine($"[DeletePhotoFolder] Đã xóa folder: {folderPath}");
+                }
+                else
+                {
+                    Console.WriteLine($"[DeletePhotoFolder] Không tìm thấy folder: {folderPath}");
+                }
 
                 var photos = await _context.Photos
                     .Where(p => p.CustId == order.CustId)
@@ -275,6 +284,7 @@ namespace p3_backend.Controllers
                 {
                     _context.Photos.RemoveRange(photos);
                     await _context.SaveChangesAsync();
+                    Console.WriteLine($"[DeletePhotoFolder] Đã xóa {photos.Count} ảnh khỏi DB");
                 }
             }
             catch (Exception ex)
