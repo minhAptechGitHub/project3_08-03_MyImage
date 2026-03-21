@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,20 +17,62 @@ namespace p3_backend.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly P3MyImage3Context _context;
+        private readonly IWebHostEnvironment _env;
 
-        public OrdersController(P3MyImage3Context context)
+        public OrdersController(P3MyImage3Context context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: api/Orders
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+        public async Task<IActionResult> GetOrders()
         {
-            return await _context.Orders
+            var orders = await _context.Orders
                 .Include(o => o.Cust)
                 .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Size)
+                .Select(o => new
+                {
+                    o.OrderId,
+                    o.CustId,
+                    o.FolderName,
+                    o.OrderDate,
+                    o.TotalPrice,
+                    o.ShippingAddress,
+                    o.Status,
+                    o.ProcessedByAdminId,
+                    Cust = o.Cust == null ? null : new
+                    {
+                        o.Cust.CustId,
+                        o.Cust.FName,
+                        o.Cust.LName,
+                        o.Cust.Email,
+                        o.Cust.PNo,
+                        o.Cust.Address
+                    },
+                    OrderDetails = o.OrderDetails.Select(od => new
+                    {
+                        od.OrderDetailId,
+                        od.PhotoId,
+                        od.SizeId,
+                        od.Quantity,
+                        od.PricePerCopy,
+                        od.LineTotal,
+                        od.NoteToAdmin,
+                        Size = od.Size == null ? null : new
+                        {
+                            od.Size.SizeId,
+                            od.Size.SizeName,
+                            od.Size.Price
+                        }
+                    }).ToList()
+                })
+                .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
+
+            return Ok(orders);
         }
 
         // GET: api/Orders/5
@@ -37,7 +81,9 @@ namespace p3_backend.Controllers
         {
             var order = await _context.Orders
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Photo) // Include thêm Photo để xem chi tiết
+                .ThenInclude(od => od.Photo)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Size)
                 .FirstOrDefaultAsync(o => o.OrderId == id);
 
             if (order == null) return NotFound();
@@ -45,30 +91,26 @@ namespace p3_backend.Controllers
         }
 
         // POST: api/Orders
-        // SỬA TẠI ĐÂY: Nhận OrderCreateDto thay vì Order
         [HttpPost]
         public async Task<ActionResult<Order>> PostOrder(OrderCreateDto orderDto)
         {
             if (orderDto == null) return BadRequest("Data is null");
 
-            // 1. Khởi tạo Order Entity
             var order = new Order
             {
                 CustId = orderDto.CustId,
                 ShippingAddress = orderDto.ShippingAddress,
                 Status = orderDto.Status ?? "Pending",
                 OrderDate = DateTime.Now,
-                TotalPrice = 0 // Mặc định là 0, sẽ tính ở dưới
+                TotalPrice = 0
             };
 
-            // 2. Xử lý tính toán tiền bạc (Logic quan trọng)
             if (orderDto.OrderDetails != null && orderDto.OrderDetails.Any())
             {
                 decimal runningTotal = 0;
 
                 foreach (var item in orderDto.OrderDetails)
                 {
-                    // Tính toán LineTotal dựa trên dữ liệu thực tế từ DTO
                     decimal currentLineTotal = (item.Quantity > 0 ? item.Quantity : 1) * item.PricePerCopy;
 
                     var detail = new OrderDetail
@@ -84,25 +126,20 @@ namespace p3_backend.Controllers
                     order.OrderDetails.Add(detail);
                 }
 
-                // Gán tổng tiền sau khi đã duyệt hết danh sách ảnh
                 order.TotalPrice = runningTotal;
             }
 
-            // 3. Lưu vào Database
             try
             {
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
 
-                // Load lại để lấy FolderName (Computed) và các dữ liệu phát sinh từ DB
                 await _context.Entry(order).ReloadAsync();
 
-                // Trả về Order đã có đầy đủ ID và TotalPrice
                 return CreatedAtAction("GetOrder", new { id = order.OrderId }, order);
             }
             catch (Exception ex)
             {
-                // Log lỗi chi tiết nếu có
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -114,7 +151,6 @@ namespace p3_backend.Controllers
             if (id != order.OrderId) return BadRequest();
 
             _context.Entry(order).State = EntityState.Modified;
-            // Giữ nguyên FolderName cũ, không cho sửa qua API
             _context.Entry(order).Property(x => x.FolderName).IsModified = false;
 
             try
@@ -163,8 +199,9 @@ namespace p3_backend.Controllers
                         od.Quantity,
                         od.PricePerCopy,
                         od.LineTotal,
+                        od.NoteToAdmin,
                         Photo = new { od.Photo.PhotoId, od.Photo.FileName, od.Photo.FilePath },
-                        Size = new { od.Size.SizeId, od.Size.SizeName, od.Size.Price }
+                        Size = od.Size == null ? null : new { od.Size.SizeId, od.Size.SizeName, od.Size.Price }
                     }).ToList()
                 })
                 .OrderByDescending(o => o.OrderDate)
@@ -179,10 +216,7 @@ namespace p3_backend.Controllers
         {
             var order = await _context.Orders.FindAsync(id);
 
-            if (order == null)
-            {
-                return NotFound();
-            }
+            if (order == null) return NotFound();
 
             order.Status = status;
 
@@ -192,17 +226,61 @@ namespace p3_backend.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!OrderExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                if (!OrderExists(id)) return NotFound();
+                else throw;
+            }
+
+            if (status == "Completed")
+            {
+                await DeletePhotoFolderForOrder(order);
             }
 
             return NoContent();
+        }
+
+        private async Task DeletePhotoFolderForOrder(Order order)
+        {
+            try
+            {
+                string folderName = order.FolderName;
+
+                if (string.IsNullOrEmpty(folderName))
+                {
+                    var photo = await _context.Photos
+                        .Where(p => p.CustId == order.CustId && !string.IsNullOrEmpty(p.FilePath))
+                        .FirstOrDefaultAsync();
+
+                    if (photo != null)
+                    {
+                        var normalized = photo.FilePath.Replace("\\", "/");
+                        var parts = normalized.Split('/');
+                        if (parts.Length >= 2)
+                            folderName = parts[parts.Length - 2];
+                    }
+                }
+
+                if (string.IsNullOrEmpty(folderName)) return;
+
+                var uploadsRoot = Path.Combine(_env.WebRootPath ?? _env.ContentRootPath, "uploads");
+                var folderPath = Path.Combine(uploadsRoot, folderName);
+
+                if (Directory.Exists(folderPath))
+                    Directory.Delete(folderPath, recursive: true);
+
+                var photos = await _context.Photos
+                    .Where(p => p.CustId == order.CustId)
+                    .ToListAsync();
+
+                if (photos.Any())
+                {
+                    _context.Photos.RemoveRange(photos);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DeletePhotoFolder] Lỗi khi xóa folder đơn #{order.OrderId}: {ex.Message}");
+            }
         }
 
         private bool OrderExists(int id)

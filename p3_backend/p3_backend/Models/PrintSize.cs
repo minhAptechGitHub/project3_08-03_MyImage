@@ -7,6 +7,8 @@ public partial class PrintSize
 {
     public int SizeId { get; set; }
 
+    public int TemplateId { get; set; }
+
     public string SizeName { get; set; } = null!;
 
     public decimal Price { get; set; }
@@ -16,4 +18,6 @@ public partial class PrintSize
     public DateTime CreatedAt { get; set; }
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+
+    public virtual ProductTemplate Template { get; set; }
 }

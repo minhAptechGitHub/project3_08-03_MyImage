@@ -1,0 +1,66 @@
+/* Container */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Size */
+.action-small .btn {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.action-medium .btn {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.action-large .btn {
+  padding: 8px 16px;
+  font-size: 16px;
+}
+
+/* Base button */
+.btn {
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+/* Hover effect (smooth như lướt gió 🌬️) */
+.btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* View */
+.btn-view {
+  background-color: #3498db;
+  color: white;
+}
+
+/* Edit */
+.btn-edit {
+  background-color: #f1c40f;
+  color: black;
+}
+
+/* Delete */
+.btn-delete {
+  background-color: #e74c3c;
+  color: white;
+}
+
+/* Custom */
+.btn-custom {
+  background-color: #2ecc71;
+  color: white;
+}
+
+/* Optional: active click feel */
+.btn:active {
+  transform: scale(0.95);
+}
