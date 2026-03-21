@@ -9,13 +9,13 @@ public partial class Photo
 
     public int CustId { get; set; }
 
-    public string FileName { get; set; } = null!;
+    public string FileName { get; set; }
 
-    public string FilePath { get; set; } = null!;
+    public string FilePath { get; set; }
 
     public DateTime UploadDate { get; set; }
 
-    public virtual Customer Cust { get; set; } = null!;
+    public virtual Customer Cust { get; set; }
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 }

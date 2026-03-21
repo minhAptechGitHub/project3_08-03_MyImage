@@ -21,9 +21,9 @@ public partial class OrderDetail
 
     public decimal? LineTotal { get; set; }
 
-    public virtual Order Order { get; set; } = null!;
+    public virtual Order Order { get; set; }
 
-    public virtual Photo Photo { get; set; } = null!;
+    public virtual Photo Photo { get; set; }
 
-    public virtual PrintSize Size { get; set; } = null!;
+    public virtual PrintSize Size { get; set; }
 }

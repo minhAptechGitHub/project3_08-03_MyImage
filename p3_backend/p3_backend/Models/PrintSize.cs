@@ -9,7 +9,7 @@ public partial class PrintSize
 
     public int TemplateId { get; set; }
 
-    public string SizeName { get; set; } = null!;
+    public string SizeName { get; set; }
 
     public decimal Price { get; set; }
 

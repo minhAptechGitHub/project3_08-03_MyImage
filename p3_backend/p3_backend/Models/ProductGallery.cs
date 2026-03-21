@@ -11,5 +11,7 @@ public partial class ProductGallery
 
     public string ImageUrl { get; set; }
 
+    public string Caption { get; set; }
+
     public virtual ProductTemplate Template { get; set; }
 }
