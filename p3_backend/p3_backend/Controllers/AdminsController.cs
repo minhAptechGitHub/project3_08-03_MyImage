@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using p3_backend.Helpers;
 using p3_backend.Models;
 using p3_backend.Models.DTO;
 using System;
@@ -115,18 +116,25 @@ namespace p3_backend.Controllers
         //Login: api/Customer/
 
         [HttpPost("login")]
-        public async Task<ActionResult<Customer>> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             if (string.IsNullOrEmpty(dto.Username))
-                return BadRequest("Username is required");
+                return BadRequest(new { message = "Username is required" });
 
-            var customer = await _context.Admins
+            var admin = await _context.Admins
                 .FirstOrDefaultAsync(m => m.Username == dto.Username);
 
-            if (customer == null || !BCrypt.Net.BCrypt.Verify(dto.Password, customer.Password))
-                return Unauthorized("Invalid username or password");
+            if (admin == null || !BCrypt.Net.BCrypt.Verify(dto.Password, admin.Password))
+                return Unauthorized(new { message = "Invalid username or password" });
 
-            return Ok(customer);
+            // Tạo token thật bằng JwtHelper
+            var token = JwtHelper.GenerateToken(admin.Username, "Admin", admin.AdminId);
+
+            return Ok(new
+            {
+                user = admin,
+                token = token
+            });
         }
     }
 }

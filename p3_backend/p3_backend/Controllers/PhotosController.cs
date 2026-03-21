@@ -43,7 +43,6 @@ namespace p3_backend.Controllers
         }
 
         // PUT: api/Photos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPhoto(int id, Photo photo)
         {
@@ -74,7 +73,6 @@ namespace p3_backend.Controllers
         }
 
         // POST: api/Photos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Photo>> PostPhoto(Photo photo)
         {
@@ -106,9 +104,6 @@ namespace p3_backend.Controllers
         }
 
         // POST: api/Photos/upload
-        // Receives: file (IFormFile) + orderId (int) via multipart/form-data
-        // Saves file to: wwwroot/uploads/folder_XXXX/<filename>
-        // Returns:  { fileName, filePath }
         [HttpPost("upload")]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -122,35 +117,35 @@ namespace p3_backend.Controllers
             var file = request.File;
             var orderId = request.OrderId;
 
+            // Kiểm tra định dạng file cho phép
+            var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".jpg", ".jpeg", ".png", ".webp"
+            };
+
+            string extension = Path.GetExtension(file.FileName);
+
+            if (!allowedExtensions.Contains(extension))
+                return BadRequest($"Định dạng file không được hỗ trợ. Chỉ chấp nhận: JPG, PNG, WEBP.");
+
             var order = await _context.Orders.FindAsync(orderId);
             if (order == null)
                 return NotFound($"Order {orderId} not found.");
 
-            string folderName = order.FolderName; 
+            string folderName = order.FolderName;
 
-            string uploadRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", folderName);
+            string uploadRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "user", folderName);
             Directory.CreateDirectory(uploadRoot);
 
-            // --- BẮT ĐẦU SỬA TỪ ĐÂY ---
-            
-            // 1. Lấy đuôi file gốc (ví dụ: .jpg, .png)
-            string extension = Path.GetExtension(file.FileName);
-            
-            // 2. Tạo tên file mới bằng mã GUID để không bao giờ trùng và không có dấu
-            // Kết quả sẽ dạng: 7492cf51-6670-466d-8057-074495f79574.jpg
             string fileName = $"{Guid.NewGuid()}{extension}";
-            
-            // 3. Kết hợp đường dẫn
             string fullPath = Path.Combine(uploadRoot, fileName);
-
-            // --- KẾT THÚC SỬA ---
 
             using (var stream = new FileStream(fullPath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            string relativeFilePath = $"uploads/{folderName}/{fileName}";
+            string relativeFilePath = $"uploads/user/{folderName}/{fileName}";
 
             return Ok(new
             {

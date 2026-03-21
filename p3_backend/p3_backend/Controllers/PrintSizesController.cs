@@ -41,6 +41,24 @@ namespace p3_backend.Controllers
             return printSize;
         }
 
+        // GET: api/PrintSizes/ByTemplate/5
+        [HttpGet("ByTemplate/{templateId}")]
+        public async Task<ActionResult<IEnumerable<PrintSize>>> GetPrintSizesByTemplate(int templateId)
+        {
+            // Lọc danh sách size theo ID của loại sản phẩm (Rửa ảnh, Canvas, v.v.)
+            var sizes = await _context.PrintSizes
+                .Where(s => s.TemplateId == templateId && s.IsAvailable == true)
+                .OrderBy(s => s.Price) // Sắp xếp giá từ thấp đến cao cho khách dễ chọn
+                .ToListAsync();
+
+            if (sizes == null || !sizes.Any())
+            {
+                return NotFound(new { message = "Không tìm thấy kích thước nào cho loại sản phẩm này." });
+            }
+
+            return sizes;
+        }
+
         // PUT: api/PrintSizes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
