@@ -41,7 +41,7 @@ function MyOrders() {
       }
     };
     fetchOrders();
-  }, []);
+  }, [user.custId, navigate]);
 
   const toggleExpand = (orderId) => {
     setExpandedId(prev => prev === orderId ? null : orderId);
@@ -132,7 +132,7 @@ function MyOrders() {
                                 <img
                                   src={`http://localhost:5002/${item.photo?.filePath}`}
                                   alt={item.photo?.fileName || 'ảnh'}
-                                  onError={e => { e.target.src = '/images/placeholder.png'; }}
+                                  onError={e => { e.target.src = 'https://placehold.co/400x300?text=Error+Image'; }}
                                 />
                               </div>
                               <div className="detail-info">

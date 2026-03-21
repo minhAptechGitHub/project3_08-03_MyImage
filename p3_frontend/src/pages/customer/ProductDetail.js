@@ -56,6 +56,7 @@ function ProductDetail() {
               <img
                 src={`http://localhost:5002/${selectedImg}`}
                 alt={template.templateName}
+                onError={e => { e.target.src = 'https://placehold.co/400x300?text=Error+Image'; }}
               />
             </div>
             {allImages.length > 1 && (
