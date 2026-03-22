@@ -6,6 +6,8 @@ import Pagination from '../../components/Pagination';
 import '../../styles/admin/Dashboard.css';
 import '../../styles/admin/ProductPage.css';
 
+import { useOutletContext } from 'react-router-dom';
+
 const BASE_URL = 'http://localhost:5002';
 const emptyTemplate = { templateName: '', imageUrl: '', details: '', leadTime: '', isActive: true };
 
@@ -30,6 +32,8 @@ function ProductPage() {
   const [uploadingTemplate, setUploadingTemplate] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
 
+  const { showNotify } = useOutletContext();
+
   const fetchAll = async () => {
     setLoading(true);
     try {
@@ -50,7 +54,8 @@ function ProductPage() {
   const openEdit = (t) => { setEditData({ ...t }); setShowModal(true); };
 
   const handleSave = async () => {
-    if (!editData.templateName?.trim()) return alert('Vui lòng nhập tên sản phẩm.');
+    if (!editData.templateName?.trim()) return
+    showNotify('error', 'Vui lòng nhập tên sản phẩm.');;
     setSaving(true);
     try {
       if (editData.templateId) {
@@ -61,7 +66,7 @@ function ProductPage() {
       setShowModal(false);
       fetchAll();
     } catch (err) {
-      alert('Lỗi: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Lỗi: ' + (err?.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }
@@ -72,7 +77,7 @@ function ProductPage() {
       await adminService.deleteTemplate(id);
       fetchAll();
     } catch (err) {
-      alert('Không thể xóa: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Không thể xóa: ' + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -81,7 +86,7 @@ function ProductPage() {
       await adminService.deleteGallery(id);
       fetchAll();
     } catch (err) {
-      alert('Không thể xóa ảnh: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Không thể xóa ảnh: ' + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -93,7 +98,7 @@ function ProductPage() {
       const res = await adminService.uploadTemplateImage(file);
       setEditData(prev => ({ ...prev, imageUrl: res.filePath }));
     } catch (err) {
-      alert('Upload thất bại: ' + (err?.response?.data || err.message));
+      showNotify('error', 'Upload thất bại: ' + (err?.response?.data || err.message));
     } finally {
       setUploadingTemplate(false);
     }
@@ -107,14 +112,14 @@ function ProductPage() {
       const res = await adminService.uploadGalleryImage(file);
       setGalleryForm(prev => ({ ...prev, imageUrl: res.filePath }));
     } catch (err) {
-      alert('Upload thất bại: ' + (err?.response?.data || err.message));
+      showNotify('error', 'Upload thất bại: ' + (err?.response?.data || err.message));
     } finally {
       setUploadingGallery(false);
     }
   };
 
   const handleSaveGallery = async () => {
-    if (!galleryForm.templateId || !galleryForm.imageUrl?.trim()) return alert('Vui lòng chọn sản phẩm và upload ảnh.');
+    if (!galleryForm.templateId || !galleryForm.imageUrl?.trim()) return showNotify('error', 'Vui lòng chọn sản phẩm và upload ảnh.');
     setSavingGallery(true);
     try {
       await adminService.createGallery({
@@ -126,7 +131,7 @@ function ProductPage() {
       setGalleryForm({ templateId: '', imageUrl: '', caption: '' });
       fetchAll();
     } catch (err) {
-      alert('Lỗi: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Lỗi: ' + (err?.response?.data?.message || err.message));
     } finally {
       setSavingGallery(false);
     }

@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import userService from '../../services/userService';
 import '../../styles/customer/orderNew.css';
 
+import { useOutletContext } from 'react-router-dom';
+
 function OrderNew() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -30,6 +32,8 @@ function OrderNew() {
 
   const dragCounter = useRef(0);
 
+  const { showNotify } = useOutletContext();
+
   useEffect(() => {
     if (!templateId) return;
     const fetchTemplate = async () => {
@@ -50,7 +54,7 @@ function OrderNew() {
   const ensureDraftOrder = async () => {
     if (draftOrderId) return draftOrderId;
     if (!user.custId) {
-      alert('Vui lòng đăng nhập để đặt hàng.');
+      showNotify('error', 'Vui lòng đăng nhập để đặt hàng.')
       navigate('/auth/login');
       return null;
     }
@@ -102,7 +106,7 @@ function OrderNew() {
           }]);
         } catch (err) {
           console.error('Lỗi upload:', err);
-          alert(`Lỗi khi upload ảnh: ${file.name}`);
+          showNotify('error', `Lỗi khi upload ảnh: ${file.name}`)
         }
       }
     } finally {
@@ -157,7 +161,7 @@ function OrderNew() {
   };
 
   const handleStep3Next = () => {
-    if (!shippingAddress.trim()) return alert('Vui lòng nhập địa chỉ giao hàng.');
+    if (!shippingAddress.trim()) return showNotify('error', 'Vui lòng nhập địa chỉ giao hàng.');
     setStep(4);
   };
 
@@ -199,7 +203,7 @@ function OrderNew() {
       }
     } catch (err) {
       console.error(err);
-      alert('Có lỗi khi đặt hàng, vui lòng thử lại.');
+      showNotify('error', 'Có lỗi khi đặt hàng, vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }
@@ -268,7 +272,7 @@ function OrderNew() {
                 <button
                   className="btn-next"
                   onClick={() => {
-                    if (photos.length === 0) return alert('Vui lòng upload ít nhất 1 ảnh.');
+                    if (photos.length === 0) return showNotify('error', 'Vui lòng upload ít nhất 1 ảnh.')
                     setStep(2);
                   }}
                   disabled={uploading}

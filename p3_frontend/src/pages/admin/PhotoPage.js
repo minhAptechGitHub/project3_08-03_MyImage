@@ -7,6 +7,8 @@ import '../../styles/admin/ProductPage.css';
 import '../../styles/admin/OrderPage.css';
 import '../../styles/admin/PhotoPage.css';
 
+import { useOutletContext } from 'react-router-dom';
+
 const BASE_URL = 'http://localhost:5002';
 
 function getFolder(filePath) {
@@ -38,7 +40,8 @@ function PhotoPage() {
   const [viewPhoto, setViewPhoto] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
+
+  const { showNotify } = useOutletContext();
 
   const fetchAll = async () => {
     setLoading(true);
@@ -91,14 +94,13 @@ function PhotoPage() {
   const handleDeleteFolder = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
-    setDeleteError('');
     try {
       await adminService.deletePhotoFolder(deleteTarget.name);
     } catch {
       try {
         await Promise.all(deleteTarget.photos.map(p => adminService.deletePhoto(p.photoId)));
       } catch (err2) {
-        setDeleteError('Xóa thất bại: ' + (err2?.response?.data?.message || err2.message));
+        showNotify('error', 'Xóa thất bại: ' + (err2?.response?.data?.message || err2.message));
         setDeleting(false);
         return;
       }
@@ -137,7 +139,7 @@ function PhotoPage() {
             <button
               className="btn btn-delete"
               style={{ fontWeight: 600 }}
-              onClick={() => { setDeleteTarget(openFolder); setDeleteError(''); }}
+              onClick={() => { setDeleteTarget(openFolder); }}
             >
               🗑 Xóa thư mục
             </button>
@@ -209,7 +211,7 @@ function PhotoPage() {
                     <button
                       className="folder-delete-btn"
                       title="Xóa thư mục"
-                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(folder); setDeleteError(''); }}
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(folder); }}
                     >
                       🗑
                     </button>
@@ -364,9 +366,6 @@ function PhotoPage() {
             <div className="delete-folder-note">
               📦 Thao tác này thường thực hiện sau khi đơn hàng đã được in và giao thành công cho khách hàng.
             </div>
-            {deleteError && (
-              <p style={{ color: '#ff4d4f', marginTop: 10, fontSize: '0.85rem' }}>{deleteError}</p>
-            )}
           </div>
         </Modal>
       )}

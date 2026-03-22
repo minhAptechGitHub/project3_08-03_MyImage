@@ -3,7 +3,7 @@ import { Outlet, Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import './AdminLayout.css';
 
-function AdminLayout({ user, onLogout }) {
+function AdminLayout({ user, onLogout, showNotify }) {
   return (
     <div className="admin-layout">
 
@@ -31,7 +31,7 @@ function AdminLayout({ user, onLogout }) {
         {/* CONTENT */}
         <div className="admin-content">
           <div className="admin-content-inner">
-            <Outlet />
+            <Outlet context={{ showNotify }} />
           </div>
         </div>
 

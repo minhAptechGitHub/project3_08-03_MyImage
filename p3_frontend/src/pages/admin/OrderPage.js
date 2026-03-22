@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import adminService from '../../services/adminService';
 import ActionButtons from '../../components/ActionButton';
 import Modal from '../../components/Modal';
@@ -7,16 +7,18 @@ import '../../styles/admin/Dashboard.css';
 import '../../styles/admin/ProductPage.css';
 import '../../styles/admin/OrderPage.css';
 
+import { useOutletContext } from 'react-router-dom';
+
 const STATUSES = ['Pending', 'Payment Verified', 'Processing', 'Printed', 'Shipped', 'Completed', 'Cancelled'];
 
 const STATUS_MAP = {
-  pending:            { label: 'Chờ xử lý',      cls: 'pending' },
+  pending: { label: 'Chờ xử lý', cls: 'pending' },
   'payment verified': { label: 'Đã xác nhận TT', cls: 'payment-verified' },
-  processing:         { label: 'Đang xử lý',     cls: 'processing' },
-  printed:            { label: 'Đã in',           cls: 'printed' },
-  shipped:            { label: 'Đang giao',       cls: 'shipped' },
-  completed:          { label: 'Hoàn thành',      cls: 'completed' },
-  cancelled:          { label: 'Đã hủy',          cls: 'cancelled' },
+  processing: { label: 'Đang xử lý', cls: 'processing' },
+  printed: { label: 'Đã in', cls: 'printed' },
+  shipped: { label: 'Đang giao', cls: 'shipped' },
+  completed: { label: 'Hoàn thành', cls: 'completed' },
+  cancelled: { label: 'Đã hủy', cls: 'cancelled' },
 };
 
 function getStatusInfo(status = '') {
@@ -37,6 +39,8 @@ function OrderPage() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState('');
 
+  const { showNotify } = useOutletContext();
+
   const fetchAll = async () => {
     setLoading(true);
     try {
@@ -53,7 +57,10 @@ function OrderPage() {
 
   useEffect(() => { fetchAll(); }, []);
 
-  const getCustomer = (custId) => customers.find(c => c.custId === custId);
+  const getCustomer = useCallback(
+    (custId) => customers.find(c => c.custId === custId),
+    [customers]
+  );
 
   const filtered = orders.filter(o => {
     const matchStatus = !filterStatus || o.status?.toLowerCase() === filterStatus.toLowerCase();
@@ -77,7 +84,7 @@ function OrderPage() {
       fetchAll();
       setShowViewModal(false);
     } catch (err) {
-      alert('Lỗi: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Lỗi: ' + (err?.response?.data?.message || err.message));
     } finally {
       setUpdatingStatus(false);
     }
@@ -88,7 +95,7 @@ function OrderPage() {
       await adminService.deleteOrder(id);
       fetchAll();
     } catch (err) {
-      alert('Không thể xóa: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Không thể xóa: ' + (err?.response?.data?.message || err.message));
     }
   };
 

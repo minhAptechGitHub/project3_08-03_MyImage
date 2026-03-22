@@ -3,14 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import userService from '../../services/userService';
 import '../../styles/customer/myOrders.css';
 
+import { useOutletContext } from 'react-router-dom';
+
 const STATUS_MAP = {
-  'Pending':          { label: 'Chờ xác nhận',   color: 'status-pending' },
+  'Pending': { label: 'Chờ xác nhận', color: 'status-pending' },
   'Payment Verified': { label: 'Đã xác nhận TT', color: 'status-verified' },
-  'Processing':       { label: 'Đang xử lý',      color: 'status-processing' },
-  'Printed':          { label: 'Đã in xong',       color: 'status-printed' },
-  'Shipped':          { label: 'Đang giao hàng',  color: 'status-shipped' },
-  'Completed':        { label: 'Hoàn thành',       color: 'status-completed' },
-  'Cancelled':        { label: 'Đã huỷ',           color: 'status-cancelled' },
+  'Processing': { label: 'Đang xử lý', color: 'status-processing' },
+  'Printed': { label: 'Đã in xong', color: 'status-printed' },
+  'Shipped': { label: 'Đang giao hàng', color: 'status-shipped' },
+  'Completed': { label: 'Hoàn thành', color: 'status-completed' },
+  'Cancelled': { label: 'Đã huỷ', color: 'status-cancelled' },
 };
 
 function MyOrders() {
@@ -24,6 +26,8 @@ function MyOrders() {
     ...raw,
     custId: raw.custId || raw.CustId || raw.id || raw.Id
   };
+
+  const { showNotify } = useOutletContext();
 
   useEffect(() => {
     if (!user.custId) {
@@ -56,7 +60,7 @@ function MyOrders() {
       );
     } catch (err) {
       console.error('Lỗi huỷ đơn:', err);
-      alert('Không thể huỷ đơn hàng, vui lòng thử lại.');
+      showNotify('error', 'Không thể huỷ đơn hàng, vui lòng thử lại.')
     }
   };
 

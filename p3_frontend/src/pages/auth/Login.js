@@ -1,69 +1,53 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
-import adminService from '../../services/adminService';
 import userService from '../../services/userService';
 import './Auth.css';
 
-function Login({ onSuccess, onGoRegister }) {
+function Login({ onSuccess, showNotify }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const [form, setForm] = useState({ username: '', password: '' });
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState(location.state?.success || '');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    if (error) setError('');
-    if (successMsg) setSuccessMsg('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.username.trim() || !form.password) {
-      setError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
+      showNotify?.('error', 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
       return;
     }
     setLoading(true);
-    setError('');
-    setSuccessMsg('');
     try {
-      let userData = null, role = '', token = '';
       const payload = { username: form.username, password: form.password };
+      const res = await userService.login(payload);
 
-      try {
-        const res = await userService.login(payload);
-        if (res?.user) {
-          if (res.user.isActive === false || res.user.IsActive === false) {
-            setError('Tài khoản này đã bị khóa.');
-            return;
-          }
-          userData = res.user;
-          token = res.token || res.accessToken;
-          role = 'Customer';
-        }
-      } catch {}
-
-      if (!userData) {
-        const res = await adminService.login(payload);
-        if (res?.user) {
-          userData = res.user;
-          token = res.token || res.accessToken;
-          role = 'Admin';
-        }
+      if (!res?.user) {
+        showNotify?.('error', 'Tên đăng nhập hoặc mật khẩu không đúng.');
+        return;
       }
 
-      if (!userData) { setError('Tên đăng nhập hoặc mật khẩu không đúng.'); return; }
+      if (res.user.isActive === false || res.user.IsActive === false) {
+        showNotify?.('error', 'Tài khoản này đã bị khóa.');
+        return;
+      }
+
+      const userData = res.user;
+      const token = res.token || res.accessToken;
+      const role = 'Customer';
 
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
+
+      showNotify?.('success', 'Đăng nhập Customer thành công!');
       onSuccess(userData, role, token);
-      navigate(role === 'Admin' ? '/admin/dashboard' : '/');
+      navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Lỗi kết nối server. Vui lòng thử lại.');
+      showNotify?.('error', err.response?.data?.message || 'Lỗi kết nối server. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -80,9 +64,6 @@ function Login({ onSuccess, onGoRegister }) {
         <p className="auth-subtitle">Đăng nhập để tiếp tục</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          {successMsg && <div className="auth-success">{successMsg}</div>}
-          {error && <div className="auth-error">{error}</div>}
-
           <div className="auth-field">
             <label>Tên đăng nhập</label>
             <input
@@ -118,6 +99,11 @@ function Login({ onSuccess, onGoRegister }) {
           <p className="auth-footer-text">
             Chưa có tài khoản?{' '}
             <span className="auth-link" onClick={() => navigate('/auth/register')}>Đăng ký ngay</span>
+          </p>
+
+          <p className="auth-footer-text">
+            Bạn là quản trị viên?{' '}
+            <span className="auth-link" onClick={() => navigate('/auth/admin-login')}>Đăng nhập Admin</span>
           </p>
         </form>
       </div>

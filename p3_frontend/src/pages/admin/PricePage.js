@@ -6,6 +6,8 @@ import Pagination from '../../components/Pagination';
 import '../../styles/admin/Dashboard.css';
 import '../../styles/admin/ProductPage.css';
 
+import { useOutletContext } from 'react-router-dom';
+
 const emptySize = { templateId: '', sizeName: '', price: '', isAvailable: true };
 
 function PricePage() {
@@ -19,6 +21,8 @@ function PricePage() {
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [saving, setSaving] = useState(false);
+
+  const { showNotify } = useOutletContext();
 
   const fetchAll = async () => {
     setLoading(true);
@@ -47,7 +51,7 @@ function PricePage() {
 
   const handleSave = async () => {
     if (!editData.templateId || !editData.sizeName?.trim() || !editData.price) {
-      return alert('Vui lòng điền đầy đủ thông tin.');
+      return showNotify('error', 'Vui lòng điền đầy đủ thông tin.');
     }
     setSaving(true);
     try {
@@ -64,7 +68,7 @@ function PricePage() {
       setShowModal(false);
       fetchAll();
     } catch (err) {
-      alert('Lỗi: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Lỗi: ' + (err?.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }
@@ -75,7 +79,7 @@ function PricePage() {
       await adminService.deletePrintSize(id);
       fetchAll();
     } catch (err) {
-      alert('Không thể xóa: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Không thể xóa: ' + (err?.response?.data?.message || err.message));
     }
   };
 
