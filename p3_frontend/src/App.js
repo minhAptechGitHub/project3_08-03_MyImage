@@ -5,6 +5,7 @@ import AuthLayout from './layouts/AuthLayout';
 import AdminLayout from './layouts/AdminLayout';
 import CustomerLayout from './layouts/CustomerLayout';
 
+import AdminLogin from './pages/auth/AdminLogin';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 
@@ -27,6 +28,13 @@ import './App.css';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [notifies, setNotifies] = useState([]);
+
+  const showNotify = (type, msg) => {
+    const id = Date.now();
+    setNotifies(prev => [...prev, { id, type, msg }]);
+    setTimeout(() => setNotifies(prev => prev.filter(n => n.id !== id)), 3000);
+  };
 
   useEffect(() => {
     try {
@@ -48,9 +56,11 @@ function App() {
       }
 
       setUser(userData);
+      setNotifies([])
     } catch (err) {
       console.error("Lỗi parse user:", err);
       localStorage.removeItem('user');
+      showNotify('error', 'Lỗi parse user');
     }
   }, []);
 
@@ -63,10 +73,22 @@ function App() {
   const handleLogout = () => {
     sessionStorage.removeItem('user');
     setUser(null);
+    showNotify('success', 'Bạn đã Logged out');
   };
 
   return (
     <Router>
+      {notifies.length > 0 && (
+        <div className="toast-container">
+          {notifies.map((n) => (
+            <div key={n.id} className={`toast toast-${n.type}`}>
+              {n.msg}
+              <button className="toast-close" onClick={() => setNotifies(prev => prev.filter(x => x.id !== n.id))}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <Routes>
 
         {/* 🔐 AUTH */}
@@ -75,24 +97,16 @@ function App() {
             path="/auth/login"
             element={
               user
-                ? (
-                  user.role?.toLowerCase() === "admin"
-                    ? <Navigate to="/admin/dashboard" replace />
-                    : <Navigate to="/" replace />
-                )
-                : (
-                  <Login
-                    onSuccess={(userData, role, token) => {
-                      handleLogin(userData, role, token);
-                      if (role.toLowerCase() === "admin") {
-                        window.location.href = "/admin/dashboard";
-                      } else {
-                        window.location.href = "/";
-                      }
-                    }}
-                    onGoRegister={() => window.location.href = '/auth/register'}
-                  />
-                )
+                ? <Navigate to="/" replace />
+                : <Login onSuccess={handleLogin} showNotify={showNotify} />
+            }
+          />
+          <Route
+            path="/auth/admin-login"
+            element={
+              user
+                ? <Navigate to="/admin/dashboard" replace />
+                : <AdminLogin onSuccess={handleLogin} showNotify={showNotify} />
             }
           />
           <Route
@@ -100,7 +114,7 @@ function App() {
             element={
               user
                 ? <Navigate to="/" replace />
-                : <Register />
+                : <Register showNotify={showNotify} />
             }
           />
         </Route>
@@ -110,7 +124,7 @@ function App() {
           path="/admin/*"
           element={
             user && user.role?.toLowerCase() === "admin"
-              ? <AdminLayout user={user} onLogout={handleLogout} />
+              ? <AdminLayout user={user} onLogout={handleLogout} showNotify={showNotify} />
               : <Navigate to="/auth/login" replace />
           }
         >
@@ -131,7 +145,7 @@ function App() {
           element={
             user?.role?.toLowerCase() === "admin"
               ? <Navigate to="/admin/dashboard" replace />
-              : <CustomerLayout user={user} onLogout={handleLogout} />
+              : <CustomerLayout user={user} onLogout={handleLogout} showNotify={showNotify} />
           }
         >
           <Route index element={<Home />} />

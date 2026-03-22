@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import userService from '../../services/userService';
 
+import { useOutletContext } from 'react-router-dom';
+
 function Profile() {
   const raw = JSON.parse(localStorage.getItem('user') || '{}');
   const custId = raw.custId || raw.CustId || raw.id || raw.Id;
@@ -21,6 +23,8 @@ function Profile() {
     email: ''
   });
 
+  const { showNotify } = useOutletContext();
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -28,11 +32,11 @@ function Profile() {
         const data = res?.data ?? res;
         setInfo(data);
         setForm({
-          fName:   data.fName   || data.FName   || '',
-          lName:   data.lName   || data.LName   || '',
-          pNo:     data.pNo     || data.PNo     || '',
+          fName: data.fName || data.FName || '',
+          lName: data.lName || data.LName || '',
+          pNo: data.pNo || data.PNo || '',
           address: data.address || data.Address || '',
-          email:   data.email   || data.Email   || ''
+          email: data.email || data.Email || ''
         });
       } catch (err) {
         console.error(err);
@@ -42,7 +46,7 @@ function Profile() {
     };
     if (custId) fetchProfile();
     else navigate('/auth/login');
-  }, [custId]);
+  }, [custId, navigate]);
 
   const handleEdit = () => {
     setEditing(true);
@@ -52,11 +56,11 @@ function Profile() {
   const handleCancel = () => {
     setEditing(false);
     setForm({
-      fName:   info.fName   || info.FName   || '',
-      lName:   info.lName   || info.LName   || '',
-      pNo:     info.pNo     || info.PNo     || '',
+      fName: info.fName || info.FName || '',
+      lName: info.lName || info.LName || '',
+      pNo: info.pNo || info.PNo || '',
       address: info.address || info.Address || '',
-      email:   info.email   || info.Email   || ''
+      email: info.email || info.Email || ''
     });
   };
 
@@ -66,11 +70,11 @@ function Profile() {
     try {
       const updated = {
         ...info,
-        fName:   form.fName,
-        lName:   form.lName,
-        pNo:     form.pNo,
+        fName: form.fName,
+        lName: form.lName,
+        pNo: form.pNo,
         address: form.address,
-        email:   form.email
+        email: form.email
       };
       await userService.updateCustomer(custId, updated);
       setInfo(updated);
@@ -80,7 +84,7 @@ function Profile() {
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       console.error(err);
-      alert('Không thể cập nhật thông tin, vui lòng thử lại.');
+      showNotify('error', 'Không thể cập nhật thông tin, vui lòng thử lại.')
     } finally {
       setSaving(false);
     }
@@ -92,10 +96,10 @@ function Profile() {
     </div>
   );
 
-  const displayFName   = info?.fName   || info?.FName   || '';
-  const displayLName   = info?.lName   || info?.LName   || '';
-  const displayEmail   = info?.email   || info?.Email   || '';
-  const displayPhone   = info?.pNo     || info?.PNo     || '';
+  const displayFName = info?.fName || info?.FName || '';
+  const displayLName = info?.lName || info?.LName || '';
+  const displayEmail = info?.email || info?.Email || '';
+  const displayPhone = info?.pNo || info?.PNo || '';
   const displayAddress = info?.address || info?.Address || '';
 
   return (

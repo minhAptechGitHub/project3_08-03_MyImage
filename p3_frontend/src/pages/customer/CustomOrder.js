@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import userService from '../../services/userService';
 import '../../styles/customer/customOrder.css';
 
+import { useOutletContext } from 'react-router-dom';
+
 function CustomOrder() {
   const navigate = useNavigate();
 
@@ -25,6 +27,8 @@ function CustomOrder() {
   const [dragging, setDragging] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const { showNotify } = useOutletContext();
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -52,21 +56,31 @@ function CustomOrder() {
     setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
+  const validate = () => {
+    const errors = [];
+    if (!form.fullName.trim()) errors.push('Vui lòng nhập họ tên.');
+    if (!form.email.trim()) errors.push('Vui lòng nhập email.');
+    if (!form.phone.trim()) errors.push('Vui lòng nhập số điện thoại.');
+    if (!form.address.trim()) errors.push('Vui lòng nhập địa chỉ.');
+    if (!form.deliveryDate) errors.push('Vui lòng chọn ngày giao hàng.');
+    if (!form.note.trim()) errors.push('Vui lòng nhập yêu cầu in.');
+    if (photos.length === 0) errors.push('Vui lòng upload ít nhất 1 file ảnh.');
+
+    errors.forEach(msg => showNotify?.('error', msg));
+    return errors.length === 0;
+  };
+
   const handleSubmit = async () => {
     if (!user.custId) {
-      alert('Vui lòng đăng nhập để gửi yêu cầu.');
+      showNotify('error', 'Vui lòng đăng nhập để gửi yêu cầu.');
       navigate('/auth/login');
       return;
     }
-    if (!form.fullName.trim()) return alert('Vui lòng nhập họ tên.');
-    if (!form.email.trim()) return alert('Vui lòng nhập email.');
-    if (!form.phone.trim()) return alert('Vui lòng nhập số điện thoại.');
-    if (!form.address.trim()) return alert('Vui lòng nhập địa chỉ.');
-    if (!form.deliveryDate) return alert('Vui lòng chọn ngày giao hàng.');
-    if (!form.note.trim()) return alert('Vui lòng nhập yêu cầu in.');
-    if (photos.length === 0) return alert('Vui lòng upload ít nhất 1 file ảnh.');
 
+    if (!validate()) return;
     setSubmitting(true);
+
+    
     try {
       const draft = await userService.createDraftOrder({
         custId: user.custId,
@@ -117,7 +131,7 @@ function CustomOrder() {
       setSuccess(true);
     } catch (err) {
       console.error(err);
-      alert('Có lỗi xảy ra, vui lòng thử lại.');
+      showNotify('error', 'Có lỗi xảy ra, vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }

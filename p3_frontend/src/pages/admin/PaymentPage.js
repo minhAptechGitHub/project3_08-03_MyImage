@@ -7,6 +7,8 @@ import '../../styles/admin/Dashboard.css';
 import '../../styles/admin/ProductPage.css';
 import '../../styles/admin/OrderPage.css';
 
+import { useOutletContext } from 'react-router-dom';
+
 const emptyPayment = { orderId: '', paymentMethod: 'Cash', amount: '', paymentDate: '', note: '' };
 
 function PaymentPage() {
@@ -20,6 +22,8 @@ function PaymentPage() {
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [saving, setSaving] = useState(false);
+
+  const { showNotify } = useOutletContext();
 
   const fetchAll = async () => {
     setLoading(true);
@@ -58,7 +62,7 @@ function PaymentPage() {
   };
 
   const handleSave = async () => {
-    if (!editData.orderId || !editData.amount) return alert('Vui lòng nhập đầy đủ thông tin.');
+    if (!editData.orderId || !editData.amount) return showNotify('error', 'Vui lòng nhập đầy đủ thông tin.');
     setSaving(true);
     try {
       const payload = {
@@ -75,7 +79,7 @@ function PaymentPage() {
       setShowModal(false);
       fetchAll();
     } catch (err) {
-      alert('Lỗi: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Lỗi: ' + (err?.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }
@@ -86,7 +90,7 @@ function PaymentPage() {
       await adminService.deletePayment(id);
       fetchAll();
     } catch (err) {
-      alert('Không thể xóa: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Không thể xóa: ' + (err?.response?.data?.message || err.message));
     }
   };
 

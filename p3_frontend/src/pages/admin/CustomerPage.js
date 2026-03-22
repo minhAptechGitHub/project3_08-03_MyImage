@@ -7,6 +7,8 @@ import '../../styles/admin/Dashboard.css';
 import '../../styles/admin/ProductPage.css';
 import '../../styles/admin/OrderPage.css';
 
+import { useOutletContext } from 'react-router-dom';
+
 function CustomerPage() {
   const [tab, setTab] = useState('customers');
   const [customers, setCustomers] = useState([]);
@@ -24,6 +26,8 @@ function CustomerPage() {
   const [adminForm, setAdminForm] = useState({ username: '', password: '' });
   const [savingAdmin, setSavingAdmin] = useState(false);
   const [editAdmin, setEditAdmin] = useState(null);
+
+  const { showNotify } = useOutletContext();
 
   const fetchAll = async () => {
     setLoading(true);
@@ -56,7 +60,7 @@ function CustomerPage() {
       await adminService.updateCustomer(cust.custId, { ...cust, isActive: !cust.isActive });
       fetchAll();
     } catch (err) {
-      alert('Lỗi: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Lỗi: ' + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -65,7 +69,7 @@ function CustomerPage() {
       await adminService.deleteCustomer(id);
       fetchAll();
     } catch (err) {
-      alert('Không thể xóa: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Không thể xóa: ' + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -82,8 +86,8 @@ function CustomerPage() {
   };
 
   const handleSaveAdmin = async () => {
-    if (!adminForm.username?.trim()) return alert('Vui lòng nhập username.');
-    if (!editAdmin && !adminForm.password?.trim()) return alert('Vui lòng nhập mật khẩu.');
+    if (!adminForm.username?.trim()) return showNotify('error', 'Vui lòng nhập username.');
+    if (!editAdmin && !adminForm.password?.trim()) return showNotify('error', 'Vui lòng nhập mật khẩu.');
     setSavingAdmin(true);
     try {
       if (editAdmin) {
@@ -98,7 +102,7 @@ function CustomerPage() {
       setShowAdminModal(false);
       fetchAll();
     } catch (err) {
-      alert('Lỗi: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Lỗi: ' + (err?.response?.data?.message || err.message));
     } finally {
       setSavingAdmin(false);
     }
@@ -109,7 +113,7 @@ function CustomerPage() {
       await adminService.deleteAdmin(id);
       fetchAll();
     } catch (err) {
-      alert('Không thể xóa: ' + (err?.response?.data?.message || err.message));
+      showNotify('error', 'Không thể xóa: ' + (err?.response?.data?.message || err.message));
     }
   };
 
