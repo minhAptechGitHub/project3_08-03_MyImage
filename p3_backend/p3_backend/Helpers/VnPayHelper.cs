@@ -22,11 +22,11 @@ namespace p3_backend.Helpers
             string hashSecret)
         {
             var query = string.Join("&", vnpParams
+                .Where(kv => !string.IsNullOrEmpty(kv.Value))
                 .Select(kv => $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}"));
 
-            var signData = string.Join("&", vnpParams
-                .Select(kv => $"{kv.Key}={kv.Value}"));
-
+            // Theo chuẩn VNPay 2.1.0: Chuỗi signData chính là chuỗi query (đã encode)
+            var signData = query;
             var secureHash = HmacSha512(hashSecret, signData);
 
             return $"{baseUrl}?{query}&vnp_SecureHash={secureHash}";
@@ -40,11 +40,11 @@ namespace p3_backend.Helpers
             string hashSecret)
         {
             var paramDict = queryParams
-                .Where(kv => kv.Key != "vnp_SecureHash" && kv.Key != "vnp_SecureHashType")
+                .Where(kv => kv.Key != "vnp_SecureHash" && kv.Key != "vnp_SecureHashType" && !string.IsNullOrEmpty(kv.Value))
                 .OrderBy(kv => kv.Key, StringComparer.Ordinal)
                 .ToDictionary(kv => kv.Key, kv => kv.Value);
 
-            var signData = string.Join("&", paramDict.Select(kv => $"{kv.Key}={kv.Value}"));
+            var signData = string.Join("&", paramDict.Select(kv => $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}"));
             var computedHash = HmacSha512(hashSecret, signData);
 
             var receivedHash = queryParams
