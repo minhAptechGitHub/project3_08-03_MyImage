@@ -24,8 +24,7 @@ namespace p3_backend.Helpers
             var query = string.Join("&", vnpParams
                 .Select(kv => $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}"));
 
-            var signData = string.Join("&", vnpParams
-                .Select(kv => $"{kv.Key}={kv.Value}"));
+            var signData = query;
 
             var secureHash = HmacSha512(hashSecret, signData);
 
@@ -39,12 +38,15 @@ namespace p3_backend.Helpers
             IEnumerable<KeyValuePair<string, string>> queryParams,
             string hashSecret)
         {
-            var paramDict = queryParams
-                .Where(kv => kv.Key != "vnp_SecureHash" && kv.Key != "vnp_SecureHashType")
-                .OrderBy(kv => kv.Key, StringComparer.Ordinal)
-                .ToDictionary(kv => kv.Key, kv => kv.Value);
+            var filtered = queryParams
+            .Where(kv => kv.Key != "vnp_SecureHash" && kv.Key != "vnp_SecureHashType")
+            .OrderBy(kv => kv.Key, StringComparer.Ordinal);
 
-            var signData = string.Join("&", paramDict.Select(kv => $"{kv.Key}={kv.Value}"));
+            // ? URL-encode both key and value, same as VNPAY does
+            var signData = string.Join("&", filtered
+                .Select(kv => $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}"));
+
+
             var computedHash = HmacSha512(hashSecret, signData);
 
             var receivedHash = queryParams

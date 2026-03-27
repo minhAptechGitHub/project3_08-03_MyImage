@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace p3_backend.Models;
@@ -19,17 +19,17 @@ public partial class Order
 
     public string Status { get; set; }
 
-    /// <summary>COD | VNPay</summary>
     public string PaymentMethod { get; set; }
 
     public int? ProcessedByAdminId { get; set; }
-
 
     public virtual Customer Cust { get; set; }
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 
     public virtual Payment Payment { get; set; }
+
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     public virtual Admin ProcessedByAdmin { get; set; }
 }

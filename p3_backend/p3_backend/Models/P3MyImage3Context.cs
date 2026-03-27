@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,9 +39,9 @@ public partial class P3MyImage3Context : DbContext
     {
         modelBuilder.Entity<Admin>(entity =>
         {
-            entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA4141082751F8");
+            entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA41419C448447");
 
-            entity.HasIndex(e => e.Username, "UQ__Admins__F3DBC57220EB5890").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Admins__F3DBC57284AF773D").IsUnique();
 
             entity.Property(e => e.AdminId).HasColumnName("admin_id");
             entity.Property(e => e.CreatedAt)
@@ -62,11 +62,11 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.CustId).HasName("PK__Customer__A1B71F9008AF352D");
+            entity.HasKey(e => e.CustId).HasName("PK__Customer__A1B71F908F98CBDD");
 
-            entity.HasIndex(e => e.Email, "UQ__Customer__AB6E6164346F7110").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Customer__AB6E616490511928").IsUnique();
 
-            entity.HasIndex(e => e.Username, "UQ__Customer__F3DBC5724C68D63C").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Customer__F3DBC572D7C18EBE").IsUnique();
 
             entity.Property(e => e.CustId).HasColumnName("cust_id");
             entity.Property(e => e.Address)
@@ -116,9 +116,9 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("PK__Orders__465962292ED791DD");
+            entity.HasKey(e => e.OrderId).HasName("PK__Orders__465962291A646712");
 
-            entity.HasIndex(e => e.FolderName, "UQ__Orders__3AFC5A9105B1ACE4").IsUnique();
+            entity.HasIndex(e => e.FolderName, "UQ__Orders__3AFC5A911F1507A1").IsUnique();
 
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.CustId).HasColumnName("cust_id");
@@ -131,6 +131,10 @@ public partial class P3MyImage3Context : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("order_date");
+            entity.Property(e => e.PaymentMethod)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("payment_method");
             entity.Property(e => e.ProcessedByAdminId).HasColumnName("processed_by_admin_id");
             entity.Property(e => e.ShippingAddress)
                 .IsRequired()
@@ -142,10 +146,6 @@ public partial class P3MyImage3Context : DbContext
                 .IsUnicode(false)
                 .HasDefaultValue("Pending")
                 .HasColumnName("status");
-            entity.Property(e => e.PaymentMethod)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("payment_method");
             entity.Property(e => e.TotalPrice)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("total_price");
@@ -162,7 +162,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
-            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__3C5A4080731C6E7C");
+            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__3C5A4080EBD3A6C6");
 
             entity.Property(e => e.OrderDetailId).HasColumnName("order_detail_id");
             entity.Property(e => e.LineTotal)
@@ -196,9 +196,9 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EA0798E46A");
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EA62651885");
 
-            entity.HasIndex(e => e.OrderId, "UQ__Payments__465962282B0C99B1").IsUnique();
+            entity.HasIndex(e => e.OrderId, "UQ__Payments__46596228DF246BED").IsUnique();
 
             entity.Property(e => e.PaymentId).HasColumnName("payment_id");
             entity.Property(e => e.OrderId).HasColumnName("order_id");
@@ -228,45 +228,45 @@ public partial class P3MyImage3Context : DbContext
             entity.HasKey(e => e.TransactionId);
 
             entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
-            entity.Property(e => e.OrderId).HasColumnName("order_id");
-            entity.Property(e => e.TxnRef)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("txn_ref");
             entity.Property(e => e.Amount)
                 .HasColumnType("decimal(18, 0)")
                 .HasColumnName("amount");
-            entity.Property(e => e.VnpTransactionNo)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("vnp_transaction_no");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.Message)
+                .HasMaxLength(500)
+                .HasColumnName("message");
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.ResponseCode)
                 .HasMaxLength(10)
                 .IsUnicode(false)
                 .HasColumnName("response_code");
-            entity.Property(e => e.Message)
-                .HasMaxLength(500)
-                .HasColumnName("message");
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasDefaultValue("Pending")
                 .HasColumnName("status");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
+            entity.Property(e => e.TxnRef)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("txn_ref");
+            entity.Property(e => e.VnpTransactionNo)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("vnp_transaction_no");
 
-            entity.HasOne(d => d.Order)
-                .WithMany()
+            entity.HasOne(d => d.Order).WithMany(p => p.PaymentTransactions)
                 .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_PaymentTransactions_Orders");
         });
 
         modelBuilder.Entity<Photo>(entity =>
         {
-            entity.HasKey(e => e.PhotoId).HasName("PK__Photos__CB48C83D07463E73");
+            entity.HasKey(e => e.PhotoId).HasName("PK__Photos__CB48C83DAD6FF98B");
 
             entity.Property(e => e.PhotoId).HasColumnName("photo_id");
             entity.Property(e => e.CustId).HasColumnName("cust_id");
@@ -292,7 +292,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<PrintSize>(entity =>
         {
-            entity.HasKey(e => e.SizeId).HasName("PK__PrintSiz__0DCACE319866020C");
+            entity.HasKey(e => e.SizeId).HasName("PK__PrintSiz__0DCACE31503B8203");
 
             entity.Property(e => e.SizeId).HasColumnName("size_id");
             entity.Property(e => e.CreatedAt)
@@ -319,7 +319,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<ProductGallery>(entity =>
         {
-            entity.HasKey(e => e.GalleryId).HasName("PK__ProductG__43D54A71596AAEB7");
+            entity.HasKey(e => e.GalleryId).HasName("PK__ProductG__43D54A717772AC7F");
 
             entity.ToTable("ProductGallery");
 
@@ -341,7 +341,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<ProductTemplate>(entity =>
         {
-            entity.HasKey(e => e.TemplateId).HasName("PK__ProductT__BE44E079598D3B26");
+            entity.HasKey(e => e.TemplateId).HasName("PK__ProductT__BE44E07917BE5C50");
 
             entity.Property(e => e.TemplateId).HasColumnName("template_id");
             entity.Property(e => e.Details).HasColumnName("details");

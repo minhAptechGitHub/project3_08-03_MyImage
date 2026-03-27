@@ -23,6 +23,16 @@ namespace p3_backend.Controllers
             _config = config;
         }
 
+        //Get:
+        [HttpGet("transactions")]
+        public async Task<IActionResult> GetTransactions()
+        {
+            var list = await _context.PaymentTransactions
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+            return Ok(list);
+        }
+
         // ================================================================
         // POST api/VnPay/create-payment-url
         // Body: { "orderId": 5, "amount": 46000 }
