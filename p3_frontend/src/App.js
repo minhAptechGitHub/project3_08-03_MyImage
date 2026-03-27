@@ -23,6 +23,7 @@ import OrderNew from './pages/customer/OrderNew';
 import MyOrders from './pages/customer/MyOrders';
 import CustomOrder from './pages/customer/CustomOrder';
 import Profile from './pages/customer/ProfileCustomer';
+import VnPayCallback from './pages/customer/VnPayCallback';
 
 import './App.css';
 
@@ -154,6 +155,7 @@ function App() {
           <Route path="order/custom" element={<CustomOrder />} />
           <Route path="orders" element={<MyOrders />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="VnPay/callback" element={<VnPayCallback />} />
         </Route>
 
         {/* 🚫 fallback */}

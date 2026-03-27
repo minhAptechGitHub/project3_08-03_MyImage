@@ -168,15 +168,18 @@ function OrderNew() {
   const handleConfirm = async () => {
     setSubmitting(true);
     try {
+      // 1. Cập nhật thông tin đơn hàng
       await userService.updateOrder(draftOrderId, {
         orderId: draftOrderId,
         custId: user.custId,
         shippingAddress,
         status: 'Pending',
-        totalPrice: 0,
+        totalPrice: totalPrice,
+        paymentMethod,
         orderDate: new Date().toISOString()
       });
 
+      // 2. Tạo các OrderDetail
       for (const photo of photos) {
         const size = sizes.find(s => s.sizeId === photo.sizeId);
         await userService.createOrderDetail({
@@ -189,16 +192,20 @@ function OrderNew() {
         });
       }
 
-      await userService.createPayment({
-        orderId: draftOrderId,
-        paymentMethod,
-        paymentStatus: 'Pending',
-        paymentDate: new Date().toISOString()
-      });
-
       if (paymentMethod === 'VNPay') {
-        navigate(`/payment/vnpay?orderId=${draftOrderId}&amount=${totalPrice}`);
+        // 3a. Gọi backend để lấy URL thanh toán đã ký
+        const res = await userService.createVnPayUrl(draftOrderId, totalPrice);
+        const vnpayUrl = res.paymentUrl;
+        // Redirect toàn trang sang VNPay
+        window.location.href = vnpayUrl;
       } else {
+        // 3b. COD: tạo bản ghi Payment rồi hiện thành công
+        await userService.createPayment({
+          orderId: draftOrderId,
+          paymentMethod: 'COD',
+          paymentStatus: 'Pending',
+          paymentDate: new Date().toISOString()
+        });
         setStep(5);
       }
     } catch (err) {
@@ -208,6 +215,7 @@ function OrderNew() {
       setSubmitting(false);
     }
   };
+
 
   const totalPrice = photos.reduce((sum, photo) => {
     const size = sizes.find(s => s.sizeId === photo.sizeId);

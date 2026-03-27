@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace p3_backend.Models;
@@ -19,7 +19,11 @@ public partial class Order
 
     public string Status { get; set; }
 
+    /// <summary>COD | VNPay</summary>
+    public string PaymentMethod { get; set; }
+
     public int? ProcessedByAdminId { get; set; }
+
 
     public virtual Customer Cust { get; set; }
 

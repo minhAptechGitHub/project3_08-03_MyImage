@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -102,7 +102,8 @@ namespace p3_backend.Controllers
                 ShippingAddress = orderDto.ShippingAddress,
                 Status = orderDto.Status ?? "Pending",
                 OrderDate = DateTime.Now,
-                TotalPrice = 0
+                TotalPrice = 0,
+                PaymentMethod = orderDto.PaymentMethod
             };
 
             if (orderDto.OrderDetails != null && orderDto.OrderDetails.Any())
@@ -150,6 +151,7 @@ namespace p3_backend.Controllers
 
             _context.Entry(order).State = EntityState.Modified;
             _context.Entry(order).Property(x => x.FolderName).IsModified = false;
+            _context.Entry(order).Property(x => x.PaymentMethod).IsModified = false;
 
             try
             {

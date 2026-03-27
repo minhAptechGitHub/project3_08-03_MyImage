@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace p3_backend.Models;
@@ -10,10 +10,6 @@ public partial class Payment
     public int OrderId { get; set; }
 
     public string PaymentMethod { get; set; }
-
-    public string CreditCardEncrypted { get; set; }
-
-    public string EncryptionMethod { get; set; }
 
     public DateTime PaymentDate { get; set; }
 

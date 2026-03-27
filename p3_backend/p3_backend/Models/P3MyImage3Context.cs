@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +24,8 @@ public partial class P3MyImage3Context : DbContext
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
 
     public virtual DbSet<Payment> Payments { get; set; }
+
+    public virtual DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
     public virtual DbSet<Photo> Photos { get; set; }
 
@@ -140,6 +142,10 @@ public partial class P3MyImage3Context : DbContext
                 .IsUnicode(false)
                 .HasDefaultValue("Pending")
                 .HasColumnName("status");
+            entity.Property(e => e.PaymentMethod)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("payment_method");
             entity.Property(e => e.TotalPrice)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("total_price");
@@ -195,14 +201,6 @@ public partial class P3MyImage3Context : DbContext
             entity.HasIndex(e => e.OrderId, "UQ__Payments__465962282B0C99B1").IsUnique();
 
             entity.Property(e => e.PaymentId).HasColumnName("payment_id");
-            entity.Property(e => e.CreditCardEncrypted)
-                .HasMaxLength(500)
-                .IsUnicode(false)
-                .HasColumnName("credit_card_encrypted");
-            entity.Property(e => e.EncryptionMethod)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("encryption_method");
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.PaymentDate)
                 .HasDefaultValueSql("(getdate())")
@@ -223,6 +221,47 @@ public partial class P3MyImage3Context : DbContext
             entity.HasOne(d => d.Order).WithOne(p => p.Payment)
                 .HasForeignKey<Payment>(d => d.OrderId)
                 .HasConstraintName("FK_Payments_Orders");
+        });
+
+        modelBuilder.Entity<PaymentTransaction>(entity =>
+        {
+            entity.HasKey(e => e.TransactionId);
+
+            entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
+            entity.Property(e => e.TxnRef)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("txn_ref");
+            entity.Property(e => e.Amount)
+                .HasColumnType("decimal(18, 0)")
+                .HasColumnName("amount");
+            entity.Property(e => e.VnpTransactionNo)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("vnp_transaction_no");
+            entity.Property(e => e.ResponseCode)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("response_code");
+            entity.Property(e => e.Message)
+                .HasMaxLength(500)
+                .HasColumnName("message");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasDefaultValue("Pending")
+                .HasColumnName("status");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+
+            entity.HasOne(d => d.Order)
+                .WithMany()
+                .HasForeignKey(d => d.OrderId)
+                .HasConstraintName("FK_PaymentTransactions_Orders");
         });
 
         modelBuilder.Entity<Photo>(entity =>
