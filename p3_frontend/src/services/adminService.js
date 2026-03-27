@@ -71,6 +71,7 @@ const adminService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  getPaymentTransactions: () => axiosClient.get('/VnPay/transactions'),
 };
 
 export default adminService;

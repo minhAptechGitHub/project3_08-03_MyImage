@@ -19,7 +19,8 @@ function Sidebar({ user, onLogout }) {
         { path: '/admin/products', label: 'Products', icon: <PictureOutlined /> },
         { path: '/admin/prices', label: 'Prices', icon: <DollarOutlined /> },
         { path: '/admin/order-page', label: 'Orders & Order Details', icon: <ShoppingCartOutlined /> },
-        { path: '/admin/payments', label: 'Payment Method', icon: <CreditCardOutlined /> },
+        // { path: '/admin/payments', label: 'Payment Method', icon: <CreditCardOutlined /> },
+        { path: '/admin/payment-transaction', label: 'VnPay Transactions', icon: <CreditCardOutlined /> },
         { path: '/admin/customers', label: 'Accounts', icon: <TeamOutlined /> },
         { path: '/admin/photos', label: 'Photo Gallery', icon: <FileImageOutlined /> },
     ];

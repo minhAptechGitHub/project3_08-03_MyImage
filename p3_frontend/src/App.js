@@ -16,6 +16,7 @@ import PricePage from './pages/admin/PricePage';
 import PaymentPage from './pages/admin/PaymentPage';
 import CustomerPage from './pages/admin/CustomerPage';
 import PhotoPage from './pages/admin/PhotoPage';
+import PaymentTransactionPage from './pages/admin/PaymentTransactionPage';
 
 import Home from './pages/customer/Home';
 import ProductDetail from './pages/customer/ProductDetail';
@@ -23,6 +24,7 @@ import OrderNew from './pages/customer/OrderNew';
 import MyOrders from './pages/customer/MyOrders';
 import CustomOrder from './pages/customer/CustomOrder';
 import Profile from './pages/customer/ProfileCustomer';
+import VnPayCallback from './pages/customer/VnPayCallback';
 
 import './App.css';
 
@@ -132,7 +134,8 @@ function App() {
           <Route path="order-page" element={<OrderPage />} />
           <Route path="products" element={<ProductPage />} />
           <Route path="prices" element={<PricePage />} />
-          <Route path="payments" element={<PaymentPage />} />
+          {/* <Route path="payments" element={<PaymentPage />} /> */}
+          <Route path="payment-transaction" element={<PaymentTransactionPage />} />
           <Route path="customers" element={<CustomerPage />} />
           <Route path="photos" element={<PhotoPage />} />
 
@@ -154,6 +157,7 @@ function App() {
           <Route path="order/custom" element={<CustomOrder />} />
           <Route path="orders" element={<MyOrders />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="VnPay/callback" element={<VnPayCallback />} />
         </Route>
 
         {/* 🚫 fallback */}

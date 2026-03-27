@@ -147,6 +147,7 @@ function MyOrders() {
                                 <p className="detail-qty">Số lượng: <strong>{item.quantity} bản</strong></p>
                                 <p className="detail-price">
                                   {Number(item.pricePerCopy).toLocaleString('vi-VN')}đ × {item.quantity} =&nbsp;
+                                  {console.log(order.totalPrice)}
                                   <strong className="line-total">{Number(item.lineTotal).toLocaleString('vi-VN')}đ</strong>
                                 </p>
                               </div>
