@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\uploads\galleries\" />
     <Folder Include="wwwroot\uploads\templates\" />
     <Folder Include="wwwroot\uploads\user\" />
   </ItemGroup>

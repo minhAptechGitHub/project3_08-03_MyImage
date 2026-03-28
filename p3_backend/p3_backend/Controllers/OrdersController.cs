@@ -33,6 +33,8 @@ namespace p3_backend.Controllers
                 .Include(o => o.Cust)
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Size)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Photo)
                 .Select(o => new
                 {
                     o.OrderId,
@@ -66,6 +68,12 @@ namespace p3_backend.Controllers
                             od.Size.SizeId,
                             od.Size.SizeName,
                             od.Size.Price
+                        },
+                        Photo = od.Photo == null ? null : new
+                        {
+                            od.Photo.PhotoId,
+                            od.Photo.FileName,
+                            od.Photo.FilePath
                         }
                     }).ToList()
                 })
@@ -251,10 +259,8 @@ namespace p3_backend.Controllers
 
                     if (photo != null)
                     {
-                        // FilePath dạng: uploads/user/{folderName}/{fileName}
                         var normalized = photo.FilePath.Replace("\\", "/");
                         var parts = normalized.Split('/');
-                        // parts[0]=uploads, parts[1]=user, parts[2]=folderName
                         if (parts.Length >= 4)
                             folderName = parts[2];
                     }
@@ -262,7 +268,6 @@ namespace p3_backend.Controllers
 
                 if (string.IsNullOrEmpty(folderName)) return;
 
-                // Đúng: uploads/user/{folderName}
                 var webRoot = _env.WebRootPath ?? _env.ContentRootPath;
                 var folderPath = Path.Combine(webRoot, "uploads", "user", folderName);
 
