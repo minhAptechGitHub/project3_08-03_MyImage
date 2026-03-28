@@ -311,20 +311,10 @@ function OrderPage() {
                         {methodInfo.label}
                       </span>
                     </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Số tiền:</span>
-                      <strong className="money">{vnd(existingPayment.amount)}</strong>
-                    </div>
                     {existingPayment.note && (
                       <div className="detail-item">
                         <span className="detail-label">Ghi chú:</span>
                         {existingPayment.note}
-                      </div>
-                    )}
-                    {existingPayment.paymentDate && (
-                      <div className="detail-item">
-                        <span className="detail-label">Ngày thanh toán:</span>
-                        {new Date(existingPayment.paymentDate).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
                       </div>
                     )}
                   </div>

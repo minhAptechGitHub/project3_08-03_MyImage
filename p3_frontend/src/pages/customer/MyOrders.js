@@ -20,13 +20,15 @@ const isCustomOrder = (order) =>
   Number(order.totalPrice) === 0 &&
   order.orderDetails?.some(d => d.size === null || d.size === undefined);
 
+const calcTotal = (order) =>
+  order.orderDetails?.reduce((sum, item) => sum + Number(item.lineTotal || 0), 0) || 0;
+
 function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const navigate = useNavigate();
 
-  // Lấy thông tin user từ localStorage (an toàn hơn)
   const raw = JSON.parse(localStorage.getItem('user') || '{}');
   const user = {
     ...raw,
@@ -75,7 +77,6 @@ function MyOrders() {
     }
   };
 
-  // Format ngày giờ theo múi giờ Việt Nam (tốt hơn)
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
 
@@ -129,6 +130,7 @@ function MyOrders() {
               const isOpen = expandedId === order.orderId;
               const custom = isCustomOrder(order);
               const sharedNote = order.orderDetails?.find(item => item.noteToAdmin)?.noteToAdmin;
+              const total = calcTotal(order);
 
               return (
                 <div
@@ -155,7 +157,7 @@ function MyOrders() {
                       <span className="order-total">
                         {custom
                           ? 'Chờ báo giá'
-                          : `${Number(order.totalPrice || 0).toLocaleString('vi-VN')}đ`
+                          : `${total.toLocaleString('vi-VN')}đ`
                         }
                       </span>
                       <span className="expand-icon">
@@ -183,22 +185,61 @@ function MyOrders() {
 
                       {/* ĐƠN IN THEO YÊU CẦU */}
                       {custom ? (
-                        <div className="custom-order-notice">
-                          <div className="notice-icon">
-                            <Icon icon="twemoji:telephone-receiver" width="28" />
+                        <>
+                          <div className="custom-order-notice">
+                            <div className="notice-icon">
+                              <Icon icon="twemoji:telephone-receiver" width="28" />
+                            </div>
+                            <div className="notice-body">
+                              <strong>Đơn in theo yêu cầu</strong>
+                              <p>
+                                Chúng tôi đã nhận được {order.orderDetails?.length || 0} file ảnh của bạn.
+                                Nhân viên sẽ liên hệ sớm nhất để tư vấn và báo giá chi tiết.
+                              </p>
+                              <p className="notice-contact">
+                                <Icon icon="twemoji:e-mail" style={{ marginRight: '4px' }} />
+                                Liên hệ: <strong>support@myimage.vn</strong>
+                              </p>
+                            </div>
                           </div>
-                          <div className="notice-body">
-                            <strong>Đơn in theo yêu cầu</strong>
-                            <p>
-                              Chúng tôi đã nhận được {order.orderDetails?.length || 0} file ảnh của bạn.
-                              Nhân viên sẽ liên hệ sớm nhất để tư vấn và báo giá chi tiết.
-                            </p>
-                            <p className="notice-contact">
-                              <Icon icon="twemoji:e-mail" style={{ marginRight: '4px' }} />
-                              Liên hệ: <strong>support@myimage.vn</strong>
-                            </p>
-                          </div>
-                        </div>
+
+                          {/* ẢNH ĐÃ UPLOAD - đơn theo yêu cầu */}
+                          {order.orderDetails?.length > 0 && (
+                            <div className="detail-items">
+                              {order.orderDetails.map((item, i) => (
+                                <div key={i} className="detail-item">
+                                  <img
+                                    src={
+                                      item.photo?.filePath
+                                        ? `http://localhost:5002/${item.photo.filePath}`
+                                        : 'https://placehold.co/80x80?text=No+Image'
+                                    }
+                                    alt={item.photo?.fileName || 'Không có ảnh'}
+                                    style={{
+                                      width: '80px',
+                                      height: '80px',
+                                      objectFit: 'cover',
+                                      borderRadius: '6px',
+                                      border: '1px solid #ddd'
+                                    }}
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = 'https://placehold.co/80x80?text=No+Image';
+                                    }}
+                                  />
+                                  <div className="detail-info">
+                                    <p className="detail-filename">
+                                      {item.photo?.fileName || 'Ảnh không xác định'}
+                                    </p>
+                                    <p className="detail-qty">
+                                      Số lượng: <strong>{item.quantity} bản</strong>
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
                       ) : (
                         /* ĐƠN THÔNG THƯỜNG */
                         order.orderDetails?.length > 0 ? (
@@ -267,7 +308,7 @@ function MyOrders() {
                           <>
                             <span>Tổng cộng:</span>
                             <strong className="total-price">
-                              {Number(order.totalPrice || 0).toLocaleString('vi-VN')}đ
+                              {total.toLocaleString('vi-VN')}đ
                             </strong>
                           </>
                         )}
