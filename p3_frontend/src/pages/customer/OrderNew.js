@@ -176,7 +176,7 @@ function OrderNew() {
         custId: user.custId,
         shippingAddress,
         status: 'Pending',
-        totalPrice: totalPrice,
+        totalPrice: 0,
         paymentMethod,
         orderDate: new Date().toISOString()
       });
