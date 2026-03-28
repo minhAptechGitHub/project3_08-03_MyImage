@@ -6,8 +6,6 @@ import { Icon } from '@iconify/react';
 
 import { useOutletContext } from 'react-router-dom';
 
-import { useOutletContext } from 'react-router-dom';
-
 function CustomOrder() {
   const navigate = useNavigate();
 
