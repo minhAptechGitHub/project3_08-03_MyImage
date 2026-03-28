@@ -5,6 +5,8 @@ import '../../styles/customer/orderNew.css';
 
 import { useOutletContext } from 'react-router-dom';
 
+import { Icon } from '@iconify/react';
+
 function OrderNew() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -258,25 +260,35 @@ function OrderNew() {
                 onDrop={handleDrop}
               >
                 <input type="file" multiple accept="image/*" onChange={handleFileChange} hidden />
-                <div className="upload-icon">📁</div>
+                <div className="upload-icon">
+                  <Icon icon="twemoji:open-file-folder" width="40" />
+                </div>
                 <p>{dragging ? 'Thả ảnh vào đây...' : 'Nhấn để chọn ảnh hoặc kéo thả vào đây'}</p>
                 <span>Hỗ trợ: JPG, PNG, WEBP</span>
               </label>
 
-              {uploading && <p className="uploading-text">⏳ Đang upload...</p>}
+              {uploading && (
+                <p className="uploading-text">
+                  <Icon icon="twemoji:hourglass-not-done" style={{ marginRight: '6px' }} />
+                  Đang upload...
+                </p>
+              )}
 
               {photos.length > 0 && (
                 <div className="photo-grid">
                   {photos.map((p, i) => (
                     <div key={i} className="photo-thumb">
                       <img src={p.preview} alt={p.fileName} />
-                      <button className="remove-btn" onClick={() => removePhoto(i)}>✕</button>
+                      <button className="remove-btn" onClick={() => removePhoto(i)}>
+                        <Icon icon="twemoji:cross-mark" />
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
 
               <div className="step-actions">
+                <button className="btn-back" onClick={() => navigate(-1)}>← Quay lại</button>
                 <button
                   className="btn-next"
                   onClick={() => {
@@ -305,7 +317,9 @@ function OrderNew() {
                     <div key={i} className="per-photo-item">
                       <div className="per-photo-img">
                         <img src={photo.preview} alt={photo.fileName} />
-                        <button className="remove-btn" onClick={() => removePhoto(i)}>✕</button>
+                        <button className="remove-btn" onClick={() => removePhoto(i)}>
+                          <Icon icon="twemoji:cross-mark" />
+                        </button>
                       </div>
                       <div className="per-photo-controls">
                         <p className="per-photo-name">{photo.fileName}</p>
@@ -405,48 +419,84 @@ function OrderNew() {
           {step === 4 && (
             <div className="step-content">
               <h2>Phương thức thanh toán</h2>
+
               <p className="step-subtitle">
-                Tổng đơn hàng: <strong className="highlight">{Number(totalPrice).toLocaleString('vi-VN')}đ</strong>
+                Tổng đơn hàng:{' '}
+                <strong className="highlight">
+                  {Number(totalPrice).toLocaleString('vi-VN')}đ
+                </strong>
               </p>
 
+              {/* PAYMENT OPTIONS */}
               <div className="payment-options">
+
+                {/* COD */}
                 <div
                   className={`payment-option ${paymentMethod === 'COD' ? 'selected' : ''}`}
                   onClick={() => setPaymentMethod('COD')}
                 >
-                  <span className="payment-icon">💵</span>
+                  <span className="payment-icon">
+                    <Icon icon="twemoji:money-with-wings" width="24" />
+                  </span>
+
                   <div>
                     <strong>Thanh toán khi nhận hàng (COD)</strong>
                     <p>Trả tiền mặt khi nhận được sản phẩm</p>
                   </div>
                 </div>
 
+                {/* VNPay (IMAGE ONLY) */}
                 <div
                   className={`payment-option ${paymentMethod === 'VNPay' ? 'selected' : ''}`}
                   onClick={() => setPaymentMethod('VNPay')}
                 >
-                  <span className="payment-icon">📱</span>
+                  <span className="payment-icon">
+                    <img
+                      src="/images/logo/vnpay.png"
+                      alt="VNPay"
+                      style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                    />
+                  </span>
+
                   <div>
                     <strong>Thanh toán qua VNPay</strong>
                     <p>Quét mã QR để thanh toán nhanh chóng</p>
                   </div>
                 </div>
+
               </div>
 
+              {/* NOTICE */}
               {paymentMethod === 'VNPay' && (
                 <div className="vnpay-notice">
-                  💡 Sau khi xác nhận, bạn sẽ được chuyển đến trang QR để hoàn tất thanh toán.
+                  <Icon icon="twemoji:light-bulb" width="18" style={{ marginRight: '6px' }} />
+                  Sau khi xác nhận, bạn sẽ được chuyển đến trang QR để hoàn tất thanh toán.
                 </div>
               )}
 
+              {/* ACTIONS */}
               <div className="step-actions">
-                <button className="btn-back" onClick={() => setStep(3)}>← Quay lại</button>
-                <button className="btn-confirm" onClick={handleConfirm} disabled={submitting}>
-                  {submitting
-                    ? 'Đang xử lý...'
-                    : paymentMethod === 'VNPay'
-                      ? '📱 Tiếp tục thanh toán VNPay →'
-                      : '✓ Đặt hàng ngay'}
+                <button className="btn-back" onClick={() => setStep(3)}>
+                  ← Quay lại
+                </button>
+
+                <button
+                  className="btn-confirm"
+                  onClick={handleConfirm}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    'Đang xử lý...'
+                  ) : paymentMethod === 'VNPay' ? (
+                    <>
+                      Tiếp tục thanh toán VNPay →
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="twemoji:check-mark-button" width="18" style={{ marginRight: '6px' }} />
+                      Đặt hàng ngay
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -455,7 +505,9 @@ function OrderNew() {
           {/* ===== BƯỚC 5: THÀNH CÔNG (COD) ===== */}
           {step === 5 && (
             <div className="step-content success-screen">
-              <div className="success-icon">🎉</div>
+              <div className="success-icon">
+                <Icon icon="twemoji:party-popper" width="40" />
+              </div>
               <h2>Đặt hàng thành công!</h2>
               <p>
                 Đơn hàng <strong>#{draftOrderId}</strong> của bạn đã được ghi nhận.<br />

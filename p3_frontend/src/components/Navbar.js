@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Icon } from '@iconify/react';
 import './Navbar.css';
 
 function Navbar({ user, onLogout }) {
@@ -78,14 +79,14 @@ function Navbar({ user, onLogout }) {
                                     </div>
                                     <div className="dropdown-divider" />
                                     <Link to="/profile" className="dropdown-item">
-                                        <span>👤</span> Thông tin của tôi
+                                        <span><Icon icon="noto:bust-in-silhouette" width="18" /></span> Thông tin của tôi
                                     </Link>
                                     <Link to="/orders" className="dropdown-item">
-                                        <span>🧾</span> Đơn hàng của tôi
+                                        <span><Icon icon="noto:receipt" width="18" /></span> Đơn hàng của tôi
                                     </Link>
                                     <div className="dropdown-divider" />
                                     <button className="dropdown-item logout" onClick={handleLogout}>
-                                        <span>🚪</span> Đăng xuất
+                                        <span><Icon icon="noto:door" width="18" /></span> Đăng xuất
                                     </button>
                                 </div>
                             )}

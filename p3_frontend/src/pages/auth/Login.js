@@ -105,6 +105,12 @@ function Login({ onSuccess, showNotify }) {
             Bạn là quản trị viên?{' '}
             <span className="auth-link" onClick={() => navigate('/auth/admin-login')}>Đăng nhập Admin</span>
           </p>
+          
+          <p className="auth-footer-text back-home-text">
+            <span className="auth-link" onClick={() => navigate('/')}>
+              ← Quay lại trang chủ
+            </span>
+          </p>
         </form>
       </div>
     </div>

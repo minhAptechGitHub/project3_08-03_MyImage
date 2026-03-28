@@ -158,3 +158,16 @@
     text-align: center;
   }
 }
+
+.contact-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.footer-socials a svg {
+  transition: transform 0.2s;
+}
+
+.footer-socials a:hover svg {
+  transform: scale(1.2);
+}

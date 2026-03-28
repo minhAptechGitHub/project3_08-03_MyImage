@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import adminService from '../../services/adminService';
 import { Link } from 'react-router-dom';
+import { Icon } from '@iconify/react';
 import '../../styles/admin/Dashboard.css';
 
 const STATUS_MAP = {
-  pending:              { label: 'Chờ xử lý',       cls: 'pending' },
-  'payment-verified':   { label: 'Đã xác nhận TT',  cls: 'payment-verified' },
-  processing:           { label: 'Đang xử lý',      cls: 'processing' },
-  printed:              { label: 'Đã in',            cls: 'printed' },
-  shipped:              { label: 'Đang giao',        cls: 'shipped' },
-  completed:            { label: 'Hoàn thành',       cls: 'completed' },
-  done:                 { label: 'Hoàn thành',       cls: 'completed' },
-  cancelled:            { label: 'Đã hủy',           cls: 'cancelled' },
-  canceled:             { label: 'Đã hủy',           cls: 'cancelled' },
+  pending: { label: 'Chờ xử lý', cls: 'pending' },
+  'payment-verified': { label: 'Đã xác nhận TT', cls: 'payment-verified' },
+  processing: { label: 'Đang xử lý', cls: 'processing' },
+  printed: { label: 'Đã in', cls: 'printed' },
+  shipped: { label: 'Đang giao', cls: 'shipped' },
+  completed: { label: 'Hoàn thành', cls: 'completed' },
+  done: { label: 'Hoàn thành', cls: 'completed' },
+  cancelled: { label: 'Đã hủy', cls: 'cancelled' },
+  canceled: { label: 'Đã hủy', cls: 'cancelled' },
 };
 
 function getStatusInfo(status = '') {
@@ -24,7 +25,7 @@ function Dashboard() {
     totalOrders: 0, totalCustomers: 0, totalRevenue: 0, pendingOrders: 0,
   });
   const [recentOrders, setRecentOrders] = useState([]);
-  const [loading, setLoading]   = useState(true);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async (isRefresh = false) => {
@@ -36,11 +37,11 @@ function Dashboard() {
         adminService.getAllCustomers().catch(() => []),
       ]);
 
-      const totalRevenue  = (orders || []).reduce((s, o) => s + (o.totalPrice || 0), 0);
+      const totalRevenue = (orders || []).reduce((s, o) => s + (o.totalPrice || 0), 0);
       const pendingOrders = (orders || []).filter(o => o.status === 'Pending').length;
 
       setStats({
-        totalOrders:    (orders    || []).length,
+        totalOrders: (orders || []).length,
         totalCustomers: (customers || []).length,
         totalRevenue,
         pendingOrders,
@@ -61,13 +62,19 @@ function Dashboard() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const vnd = v => (v || 0).toLocaleString('vi-VN') + ' ₫';
+  const vnd = v => {
+    if (!v) return '0 ₫';
+    if (v >= 1_000_000_000) return (v / 1_000_000_000).toFixed(1).replace('.0', '') + ' tỷ ₫';
+    if (v >= 1_000_000) return (v / 1_000_000).toFixed(1).replace('.0', '') + ' tr ₫';
+    if (v >= 1_000) return Math.round(v / 1_000) + 'k ₫';
+    return v + ' ₫';
+  };
 
   const CARDS = [
-    { label: 'Tổng đơn hàng',  value: stats.totalOrders,               icon: '📦', cls: 'card-blue',   isStr: false },
-    { label: 'Doanh thu',       value: vnd(stats.totalRevenue),          icon: '💰', cls: 'card-green',  isStr: true  },
-    { label: 'Đơn chờ xử lý',  value: stats.pendingOrders,              icon: '⏳', cls: 'card-orange', isStr: false },
-    { label: 'Khách hàng',      value: stats.totalCustomers,             icon: '👥', cls: 'card-purple', isStr: false },
+    { label: 'Tổng đơn hàng', value: stats.totalOrders, icon: <Icon icon="noto:package" width="28" />, cls: 'card-blue', isStr: false },
+    { label: 'Doanh thu', value: vnd(stats.totalRevenue), icon: <Icon icon="noto:money-bag" width="28" />, cls: 'card-green', isStr: true },
+    { label: 'Đơn chờ xử lý', value: stats.pendingOrders, icon: <Icon icon="noto:hourglass-not-done" width="28" />, cls: 'card-orange', isStr: false },
+    { label: 'Khách hàng', value: stats.totalCustomers, icon: <Icon icon="noto:busts-in-silhouette" width="28" />, cls: 'card-purple', isStr: false },
   ];
 
   if (loading) return (

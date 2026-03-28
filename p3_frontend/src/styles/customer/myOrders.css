@@ -320,3 +320,13 @@
   background: #3498db;
   color: #fff;
 }
+
+.orders-page svg {
+  vertical-align: middle;
+}
+
+.detail-meta svg,
+.detail-note svg,
+.notice-contact svg {
+  margin-right: 4px;
+}

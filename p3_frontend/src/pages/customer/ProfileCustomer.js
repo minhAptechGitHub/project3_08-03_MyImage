@@ -4,6 +4,8 @@ import userService from '../../services/userService';
 
 import { useOutletContext } from 'react-router-dom';
 
+import { Icon } from '@iconify/react';
+
 function Profile() {
   const raw = JSON.parse(localStorage.getItem('user') || '{}');
   const custId = raw.custId || raw.CustId || raw.id || raw.Id;
@@ -150,16 +152,16 @@ function Profile() {
             {!editing ? (
               <>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0', marginBottom: '28px' }}>
-                  <InfoRow icon="👤" label="Họ" value={displayLName || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
-                  <InfoRow icon="👤" label="Tên" value={displayFName || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
-                  <InfoRow icon="✉️" label="Email" value={displayEmail || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
-                  <InfoRow icon="📞" label="Số điện thoại" value={displayPhone || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
-                  <InfoRow icon="📍" label="Địa chỉ" value={displayAddress || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:bust-in-silhouette" width="18" />} label="Họ" value={displayLName || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:bust-in-silhouette" width="18" />} label="Tên" value={displayFName || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:envelope" width="18" />} label="Email" value={displayEmail || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:telephone-receiver" width="18" />} label="Số điện thoại" value={displayPhone || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:round-pushpin" width="18" />} label="Địa chỉ" value={displayAddress || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button onClick={handleEdit} style={btnPrimaryStyle}>
-                    ✏️ Chỉnh sửa thông tin
+                    <Icon icon="noto:pencil" width="18" /> Chỉnh sửa thông tin
                   </button>
                   <button onClick={() => navigate(-1)} style={btnSecondaryStyle}>
                     Quay lại
@@ -171,7 +173,7 @@ function Profile() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '28px' }}>
 
                   <div style={{ display: 'flex', gap: '12px' }}>
-                    <FormField label="Họ" icon="👤" style={{ flex: 1 }}>
+                    <FormField label="Họ" icon={<Icon icon="noto:bust-in-silhouette" width="18" />} style={{ flex: 1 }}>
                       <input
                         type="text"
                         value={form.lName}
@@ -180,7 +182,7 @@ function Profile() {
                         style={inputStyle}
                       />
                     </FormField>
-                    <FormField label="Tên" icon="👤" style={{ flex: 1 }}>
+                    <FormField label="Tên" icon={<Icon icon="noto:bust-in-silhouette" width="18" />} style={{ flex: 1 }}>
                       <input
                         type="text"
                         value={form.fName}
@@ -191,7 +193,7 @@ function Profile() {
                     </FormField>
                   </div>
 
-                  <FormField label="Email" icon="✉️">
+                  <FormField label="Email" icon={<Icon icon="noto:envelope" width="18" />}>
                     <input
                       type="email"
                       value={form.email}
@@ -201,7 +203,7 @@ function Profile() {
                     />
                   </FormField>
 
-                  <FormField label="Số điện thoại" icon="📞">
+                  <FormField label="Số điện thoại" icon={<Icon icon="noto:telephone-receiver" width="18" />}>
                     <input
                       type="tel"
                       value={form.pNo}
@@ -211,7 +213,7 @@ function Profile() {
                     />
                   </FormField>
 
-                  <FormField label="Địa chỉ" icon="📍">
+                  <FormField label="Địa chỉ" icon={<Icon icon="noto:round-pushpin" width="18" />}>
                     <textarea
                       value={form.address}
                       onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
@@ -224,7 +226,7 @@ function Profile() {
 
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <button type="submit" disabled={saving} style={{ ...btnPrimaryStyle, opacity: saving ? 0.7 : 1 }}>
-                    {saving ? 'Đang lưu...' : '💾 Lưu thay đổi'}
+                    {saving ? 'Đang lưu...' : <><Icon icon="noto:floppy-disk" width="18" /> Lưu thay đổi</>}
                   </button>
                   <button type="button" onClick={handleCancel} style={btnSecondaryStyle}>
                     Huỷ
