@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import userService from '../../services/userService';
 import '../../styles/customer/customOrder.css';
 import { Icon } from '@iconify/react';
-
-import { useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 
 function CustomOrder() {
   const navigate = useNavigate();

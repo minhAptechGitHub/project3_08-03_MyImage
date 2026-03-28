@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import adminService from '../../services/adminService';
 import ActionButtons from '../../components/ActionButton';
 import Modal from '../../components/Modal';
@@ -11,8 +11,6 @@ import '../../styles/admin/OrderPage.css';
 import { useOutletContext } from 'react-router-dom';
 
 const STATUSES = ['Pending', 'Payment Verified', 'Processing', 'Printed', 'Shipped', 'Completed', 'Cancelled'];
-
-const PAYMENT_METHODS = ['VNPay', 'COD'];
 
 const STATUS_MAP = {
   pending: { label: 'Chờ xử lý', cls: 'pending' },
@@ -58,8 +56,6 @@ function OrderPage() {
   const [newStatus, setNewStatus] = useState('');
 
   const { showNotify } = useOutletContext();
-  const [savingPayment, setSavingPayment] = useState(false);
-  const [paymentForm, setPaymentForm] = useState({ paymentMethod: 'Cash', amount: '', note: '' });
 
   const fetchAll = async () => {
     setLoading(true);
@@ -97,12 +93,6 @@ function OrderPage() {
   const openView = (order) => {
     setViewOrder(order);
     setNewStatus(order.status || '');
-    const existingPayment = getPayment(order.orderId);
-    setPaymentForm({
-      paymentMethod: existingPayment?.paymentMethod || 'Cash',
-      amount: existingPayment?.amount || order.totalPrice || '',
-      note: existingPayment?.note || '',
-    });
     setShowViewModal(true);
   };
 
@@ -117,32 +107,6 @@ function OrderPage() {
       showNotify('error', 'Lỗi: ' + (err?.response?.data?.message || err.message));
     } finally {
       setUpdatingStatus(false);
-    }
-  };
-
-  const handleSavePayment = async () => {
-    if (!paymentForm.amount) return alert('Vui lòng nhập số tiền.');
-    setSavingPayment(true);
-    try {
-      const existing = getPayment(viewOrder.orderId);
-      const payload = {
-        orderId: viewOrder.orderId,
-        paymentMethod: paymentForm.paymentMethod,
-        amount: parseFloat(paymentForm.amount),
-        paymentDate: new Date().toISOString(),
-        note: paymentForm.note,
-      };
-      if (existing) {
-        await adminService.updatePayment(existing.paymentId, { ...payload, paymentId: existing.paymentId });
-      } else {
-        await adminService.createPayment(payload);
-      }
-      fetchAll();
-      alert('Đã lưu thông tin thanh toán.');
-    } catch (err) {
-      showNotify('error', 'Không thể xóa: ' + (err?.response?.data?.message || err.message));
-    } finally {
-      setSavingPayment(false);
     }
   };
 
@@ -298,6 +262,7 @@ function OrderPage() {
           const custom = isCustomOrder(viewOrder);
           const sharedNote = viewOrder.orderDetails?.find(d => d.noteToAdmin)?.noteToAdmin;
           const existingPayment = getPayment(viewOrder.orderId);
+          const methodInfo = getMethodInfo(existingPayment?.paymentMethod || '');
           return (
             <div className="order-detail">
               <div className="detail-grid">
@@ -330,58 +295,42 @@ function OrderPage() {
                 </div>
               </div>
 
-              {/* THANH TOÁN */}
+              {/* THANH TOÁN - chỉ hiển thị */}
               <div className="payment-section">
                 <h4 className="payment-section-title">
                   <Icon icon="noto:credit-card" width="18" style={{ marginRight: 6 }} />
                   Thông tin thanh toán
                   {existingPayment && <span className="paid-badge">Đã có</span>}
                 </h4>
-                <div className="payment-form-row">
-                  <div className="form-group">
-                    <label>Phương thức</label>
-                    <select
-                      className="form-control"
-                      value={paymentForm.paymentMethod}
-                      onChange={(e) => setPaymentForm(p => ({ ...p, paymentMethod: e.target.value }))}
-                    >
-                      {PAYMENT_METHODS.map(m => (
-                        <option key={m} value={m}>
-                          {m === 'VNPay' ? 'VNPay' : 'COD (Thanh toán khi nhận hàng)'}
-                        </option>
-                      ))}
-                    </select>
+                {existingPayment ? (
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">Phương thức:</span>
+                      <span className={`method-badge ${methodInfo.cls}`}>
+                        {methodInfo.icon && <Icon icon={methodInfo.icon} width="14" style={{ marginRight: 4 }} />}
+                        {methodInfo.label}
+                      </span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Số tiền:</span>
+                      <strong className="money">{vnd(existingPayment.amount)}</strong>
+                    </div>
+                    {existingPayment.note && (
+                      <div className="detail-item">
+                        <span className="detail-label">Ghi chú:</span>
+                        {existingPayment.note}
+                      </div>
+                    )}
+                    {existingPayment.paymentDate && (
+                      <div className="detail-item">
+                        <span className="detail-label">Ngày thanh toán:</span>
+                        {new Date(existingPayment.paymentDate).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
+                      </div>
+                    )}
                   </div>
-                  <div className="form-group">
-                    <label>Số tiền (VNĐ)</label>
-                    <input
-                      className="form-control"
-                      type="number"
-                      min="0"
-                      value={paymentForm.amount}
-                      onChange={(e) => setPaymentForm(p => ({ ...p, amount: e.target.value }))}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="form-group" style={{ flex: 2 }}>
-                    <label>Ghi chú</label>
-                    <input
-                      className="form-control"
-                      value={paymentForm.note}
-                      onChange={(e) => setPaymentForm(p => ({ ...p, note: e.target.value }))}
-                      placeholder="Ghi chú thanh toán..."
-                    />
-                  </div>
-                  <div className="form-group" style={{ alignSelf: 'flex-end' }}>
-                    <button
-                      className="modal-btn modal-confirm-btn"
-                      onClick={handleSavePayment}
-                      disabled={savingPayment}
-                    >
-                      {savingPayment ? 'Đang lưu...' : existingPayment ? 'Cập nhật TT' : 'Lưu TT'}
-                    </button>
-                  </div>
-                </div>
+                ) : (
+                  <p style={{ color: '#aaa', fontSize: 13, margin: 0 }}>Chưa có thông tin thanh toán.</p>
+                )}
               </div>
 
               {/* YÊU CẦU IN */}
