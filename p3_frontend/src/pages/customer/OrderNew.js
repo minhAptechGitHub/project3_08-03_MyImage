@@ -198,10 +198,10 @@ function OrderNew() {
         // 3a. Gọi backend để lấy URL thanh toán đã ký
         const res = await userService.createVnPayUrl(draftOrderId, totalPrice);
         const vnpayUrl = res.paymentUrl;
-        // Redirect toàn trang sang VNPay
         window.location.href = vnpayUrl;
       } else {
-        // 3b. COD: tạo bản ghi Payment rồi hiện thành công
+        // 3b. COD: cập nhật PaymentMethod vào Orders + tạo bản ghi Payment
+        await userService.updateOrderPaymentMethod(draftOrderId, 'COD');
         await userService.createPayment({
           orderId: draftOrderId,
           paymentMethod: 'COD',

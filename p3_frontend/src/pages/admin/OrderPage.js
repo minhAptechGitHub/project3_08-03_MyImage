@@ -42,7 +42,6 @@ const isCustomOrder = (order) =>
 function OrderPage() {
   const [orders, setOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
-  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterType, setFilterType] = useState('');
@@ -60,14 +59,12 @@ function OrderPage() {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [o, c, p] = await Promise.all([
+      const [o, c] = await Promise.all([
         adminService.getAllOrders().catch(() => []),
         adminService.getAllCustomers().catch(() => []),
-        adminService.getPayments().catch(() => []),
       ]);
       setOrders(Array.isArray(o) ? o.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate)) : []);
       setCustomers(Array.isArray(c) ? c : []);
-      setPayments(Array.isArray(p) ? p : []);
     } finally {
       setLoading(false);
     }
@@ -76,7 +73,6 @@ function OrderPage() {
   useEffect(() => { fetchAll(); }, []);
 
   const getCustomer = (custId) => customers.find(c => c.custId === custId);
-  const getPayment = (orderId) => payments.find(p => p.orderId === orderId);
 
   const filtered = orders.filter(o => {
     const matchStatus = !filterStatus || o.status?.toLowerCase() === filterStatus.toLowerCase();
@@ -175,8 +171,7 @@ function OrderPage() {
                 const cust = getCustomer(o.custId);
                 const { label, cls } = getStatusInfo(o.status);
                 const custom = isCustomOrder(o);
-                const payment = getPayment(o.orderId);
-                const methodInfo = getMethodInfo(payment?.paymentMethod || '');
+                const methodInfo = getMethodInfo(o.paymentMethod || '');
                 return (
                   <tr key={o.orderId}>
                     <td>
@@ -195,11 +190,11 @@ function OrderPage() {
                       }
                     </td>
                     <td>
-                      {payment
+                      {o.paymentMethod
                         ? <span className={`method-badge ${methodInfo.cls}`}>
-                            {methodInfo.icon && <Icon icon={methodInfo.icon} width="14" style={{ marginRight: 4 }} />}
-                            {methodInfo.label}
-                          </span>
+                          {methodInfo.icon && <Icon icon={methodInfo.icon} width="14" style={{ marginRight: 4 }} />}
+                          {methodInfo.label}
+                        </span>
                         : <span style={{ color: '#ccc', fontSize: 12 }}>Chưa có</span>
                       }
                     </td>
@@ -261,8 +256,7 @@ function OrderPage() {
         {viewOrder && (() => {
           const custom = isCustomOrder(viewOrder);
           const sharedNote = viewOrder.orderDetails?.find(d => d.noteToAdmin)?.noteToAdmin;
-          const existingPayment = getPayment(viewOrder.orderId);
-          const methodInfo = getMethodInfo(existingPayment?.paymentMethod || '');
+          const methodInfo = getMethodInfo(viewOrder.paymentMethod || '');
           return (
             <div className="order-detail">
               <div className="detail-grid">
@@ -295,14 +289,13 @@ function OrderPage() {
                 </div>
               </div>
 
-              {/* THANH TOÁN - chỉ hiển thị */}
+              {/* THANH TOÁN */}
               <div className="payment-section">
                 <h4 className="payment-section-title">
                   <Icon icon="noto:credit-card" width="18" style={{ marginRight: 6 }} />
                   Thông tin thanh toán
-                  {existingPayment && <span className="paid-badge">Đã có</span>}
                 </h4>
-                {existingPayment ? (
+                {viewOrder.paymentMethod ? (
                   <div className="detail-grid">
                     <div className="detail-item">
                       <span className="detail-label">Phương thức:</span>
@@ -311,12 +304,6 @@ function OrderPage() {
                         {methodInfo.label}
                       </span>
                     </div>
-                    {existingPayment.note && (
-                      <div className="detail-item">
-                        <span className="detail-label">Ghi chú:</span>
-                        {existingPayment.note}
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <p style={{ color: '#aaa', fontSize: 13, margin: 0 }}>Chưa có thông tin thanh toán.</p>
