@@ -269,24 +269,6 @@ namespace p3_backend.Data
                 await context.OrderDetails.AddRangeAsync(details);
                 await context.SaveChangesAsync();
             }
-
-            // ============================================================
-            // PAYMENTS
-            // ============================================================
-            if (!context.Payments.Any())
-            {
-                var order1 = await context.Orders.FirstAsync(o => o.Status == "Completed");
-                var order2 = await context.Orders.FirstAsync(o => o.Status == "Payment Verified");
-
-                var payments = new Payment[]
-                {
-        new Payment { OrderId = order1.OrderId, PaymentMethod = "VNPay", PaymentDate = DateTime.Now.AddDays(-5), PaymentStatus = "Verified" },
-        new Payment { OrderId = order2.OrderId, PaymentMethod = "COD",   PaymentDate = DateTime.Now.AddDays(-2), PaymentStatus = "Verified" }
-                };
-
-                await context.Payments.AddRangeAsync(payments);
-                await context.SaveChangesAsync();
-            }
         }
     }
 }

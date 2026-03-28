@@ -9,6 +9,7 @@ import {
     TeamOutlined,
     FileImageOutlined,
     UsergroupAddOutlined,
+    CreditCardOutlined,
 } from '@ant-design/icons';
 import './Sidebar.css';
 

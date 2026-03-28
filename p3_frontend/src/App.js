@@ -8,7 +8,6 @@ import CustomerLayout from './layouts/CustomerLayout';
 import AdminLogin from './pages/auth/AdminLogin';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import AdminLogin from './pages/auth/AdminLogin';
 
 import Dashboard from './pages/admin/Dashboard';
 import OrderPage from './pages/admin/OrderPage';
