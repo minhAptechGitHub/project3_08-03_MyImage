@@ -18,7 +18,6 @@ function CustomOrder() {
     email: user.email || user.Email || '',
     phone: user.phone || user.Phone || '',
     address: user.address || user.Address || '',
-    deliveryDate: '',
     note: ''
   });
 
@@ -61,7 +60,6 @@ function CustomOrder() {
     if (!form.email.trim()) errors.push('Vui lòng nhập email.');
     if (!form.phone.trim()) errors.push('Vui lòng nhập số điện thoại.');
     if (!form.address.trim()) errors.push('Vui lòng nhập địa chỉ.');
-    if (!form.deliveryDate) errors.push('Vui lòng chọn ngày giao hàng.');
     if (!form.note.trim()) errors.push('Vui lòng nhập yêu cầu in.');
     if (photos.length === 0) errors.push('Vui lòng upload ít nhất 1 file ảnh.');
 
@@ -220,17 +218,6 @@ function CustomOrder() {
                 value={form.phone}
                 onChange={handleChange}
                 placeholder="0901 234 567"
-              />
-            </div>
-
-            <div className="form-field">
-              <label>Ngày giao hàng mong muốn <span className="req">*</span></label>
-              <input
-                name="deliveryDate"
-                type="date"
-                value={form.deliveryDate}
-                onChange={handleChange}
-                min={new Date().toISOString().split('T')[0]}
               />
             </div>
           </div>

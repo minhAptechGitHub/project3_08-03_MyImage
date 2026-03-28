@@ -144,7 +144,19 @@ namespace p3_backend.Controllers
             var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId);
             if (payment != null)
             {
+                payment.PaymentMethod = "VNPay";
                 payment.PaymentStatus = success ? "Verified" : "Failed";
+            }
+            else if (success)
+            {
+                // Chưa có bản ghi Payment → tạo mới với phương thức VNPay
+                _context.Payments.Add(new Payment
+                {
+                    OrderId       = orderId,
+                    PaymentMethod = "VNPay",
+                    PaymentStatus = "Verified",
+                    PaymentDate   = DateTime.UtcNow
+                });
             }
 
             // Cập nhật trạng thái đơn hàng
