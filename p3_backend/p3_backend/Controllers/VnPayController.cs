@@ -63,7 +63,7 @@ namespace p3_backend.Controllers
 
             var txnRef = req.OrderId.ToString();
 
-            var vnpParams = new SortedDictionary<string, string>
+            var vnpParams = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "vnp_Version",     version  },
                 { "vnp_Command",     command  },
