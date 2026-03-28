@@ -4,43 +4,43 @@ import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import axiosClient from '../../api/axiosClient';
 import './Auth.css';
 
-function Register({ onGoLogin }) {
+function Register({ onGoLogin, showNotify }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     fName: '', lName: '', email: '', pNo: '',
     dob: '', gender: '', address: '', username: '',
     password: '', confirmPassword: '',
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    if (error) setError('');
   };
 
   const validate = () => {
-    if (!form.fName.trim() || !form.lName.trim()) return setError('Vui lòng nhập đầy đủ Họ và Tên.'), false;
-    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return setError('Email không hợp lệ.'), false;
-    if (!form.username.trim() || form.username.includes(' ')) return setError('Tên đăng nhập không hợp lệ.'), false;
-    if (form.password.length < 6) return setError('Mật khẩu phải có ít nhất 6 ký tự.'), false;
-    if (form.password !== form.confirmPassword) return setError('Mật khẩu nhập lại không khớp.'), false;
-    return true;
+    const errors = [];
+    if (!form.fName.trim() || !form.lName.trim()) errors.push('Vui lòng nhập đầy đủ Họ và Tên.');
+    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.push('Email không hợp lệ.');
+    if (!form.username.trim() || form.username.includes(' ')) errors.push('Tên đăng nhập không hợp lệ.');
+    if (form.password.length < 6) errors.push('Mật khẩu phải có ít nhất 6 ký tự.');
+    if (form.password !== form.confirmPassword) errors.push('Mật khẩu nhập lại không khớp.');
+
+    errors.forEach(msg => showNotify?.('error', msg));
+    return errors.length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    setError('');
     try {
       const { confirmPassword, ...registerData } = form;
       await axiosClient.post('/customers', { ...registerData, isActive: true });
       navigate('/auth/login', { state: { success: 'Đăng ký thành công! Bạn có thể đăng nhập ngay.' } });
     } catch (err) {
-      setError(err.response?.data?.message || (err.response?.status === 409 ? 'Tài khoản đã tồn tại.' : 'Đăng ký thất bại.'));
+      showNotify?.('error', err.response?.data?.message || (err.response?.status === 409 ? 'Tài khoản đã tồn tại.' : 'Đăng ký thất bại.'))
     } finally {
       setLoading(false);
     }
@@ -57,8 +57,6 @@ function Register({ onGoLogin }) {
         <p className="auth-subtitle">Điền thông tin để đăng ký</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          {error && <div className="auth-error">{error}</div>}
-
           <div className="auth-section-label">Thông tin cá nhân</div>
           <div className="auth-grid-2">
             <div className="auth-field">

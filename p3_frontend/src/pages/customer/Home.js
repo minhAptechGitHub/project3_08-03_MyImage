@@ -4,6 +4,8 @@ import userService from '../../services/userService';
 import HeroBanner from '../../components/HeroBanner';
 import '../../styles/customer/customer.css';
 
+import { Icon } from '@iconify/react';
+
 function Home() {
     const [products, setProducts] = useState([]);
     const navigate = useNavigate();
@@ -22,10 +24,26 @@ function Home() {
     };
 
     const features = [
-        { icon: '🖼️', title: 'Chất lượng cao', desc: 'In ảnh sắc nét, màu sắc trung thực với công nghệ in hiện đại.' },
-        { icon: '🚀', title: 'Giao hàng nhanh', desc: 'Giao toàn quốc trong 2–5 ngày, có tùy chọn giao nhanh 24h.' },
-        { icon: '💰', title: 'Giá cạnh tranh', desc: 'Bảng giá minh bạch, ưu đãi hấp dẫn cho đơn hàng số lượng lớn.' },
-        { icon: '🎨', title: 'Đa dạng mẫu mã', desc: 'Hơn 50+ kiểu in từ Polaroid, Canvas, Photobook đến dải ảnh.' },
+        {
+            icon: 'twemoji:framed-picture',
+            title: 'Chất lượng cao',
+            desc: 'In ảnh sắc nét, màu sắc trung thực với công nghệ in hiện đại.'
+        },
+        {
+            icon: 'twemoji:rocket',
+            title: 'Giao hàng nhanh',
+            desc: 'Giao toàn quốc trong 2–5 ngày, có tùy chọn giao nhanh 24h.'
+        },
+        {
+            icon: 'twemoji:money-bag',
+            title: 'Giá cạnh tranh',
+            desc: 'Bảng giá minh bạch, ưu đãi hấp dẫn cho đơn hàng số lượng lớn.'
+        },
+        {
+            icon: 'twemoji:artist-palette',
+            title: 'Đa dạng mẫu mã',
+            desc: 'Hơn 50+ kiểu in từ Polaroid, Canvas, Photobook đến dải ảnh.'
+        },
     ];
 
     return (
@@ -116,7 +134,9 @@ function Home() {
                     <div className="features-grid">
                         {features.map((f, i) => (
                             <div className="feature-card" key={i}>
-                                <div className="feature-icon">{f.icon}</div>
+                                <div className="feature-icon">
+                                    <Icon icon={f.icon} width="32" />
+                                </div>
                                 <h4>{f.title}</h4>
                                 <p>{f.desc}</p>
                             </div>

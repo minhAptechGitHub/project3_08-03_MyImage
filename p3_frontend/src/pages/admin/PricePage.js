@@ -27,8 +27,8 @@ function PricePage() {
         adminService.getPrintSizes().catch(() => []),
         adminService.getTemplates().catch(() => []),
       ]);
-      setSizes(Array.isArray(s) ? s : []);
-      setTemplates(Array.isArray(t) ? t : []);
+      setSizes(Array.isArray(s) ? [...s].sort((a, b) => b.sizeId - a.sizeId) : []);
+      setTemplates(Array.isArray(t) ? [...t].sort((a, b) => b.templateId - a.templateId) : []);
     } finally {
       setLoading(false);
     }

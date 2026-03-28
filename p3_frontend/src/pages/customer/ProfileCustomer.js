@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import userService from '../../services/userService';
 
+import { useOutletContext } from 'react-router-dom';
+
+import { Icon } from '@iconify/react';
+
 function Profile() {
   const raw = JSON.parse(localStorage.getItem('user') || '{}');
   const custId = raw.custId || raw.CustId || raw.id || raw.Id;
@@ -21,6 +25,8 @@ function Profile() {
     email: ''
   });
 
+  const { showNotify } = useOutletContext();
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -28,11 +34,11 @@ function Profile() {
         const data = res?.data ?? res;
         setInfo(data);
         setForm({
-          fName:   data.fName   || data.FName   || '',
-          lName:   data.lName   || data.LName   || '',
-          pNo:     data.pNo     || data.PNo     || '',
+          fName: data.fName || data.FName || '',
+          lName: data.lName || data.LName || '',
+          pNo: data.pNo || data.PNo || '',
           address: data.address || data.Address || '',
-          email:   data.email   || data.Email   || ''
+          email: data.email || data.Email || ''
         });
       } catch (err) {
         console.error(err);
@@ -42,7 +48,7 @@ function Profile() {
     };
     if (custId) fetchProfile();
     else navigate('/auth/login');
-  }, [custId]);
+  }, [custId, navigate]);
 
   const handleEdit = () => {
     setEditing(true);
@@ -52,11 +58,11 @@ function Profile() {
   const handleCancel = () => {
     setEditing(false);
     setForm({
-      fName:   info.fName   || info.FName   || '',
-      lName:   info.lName   || info.LName   || '',
-      pNo:     info.pNo     || info.PNo     || '',
+      fName: info.fName || info.FName || '',
+      lName: info.lName || info.LName || '',
+      pNo: info.pNo || info.PNo || '',
       address: info.address || info.Address || '',
-      email:   info.email   || info.Email   || ''
+      email: info.email || info.Email || ''
     });
   };
 
@@ -66,11 +72,11 @@ function Profile() {
     try {
       const updated = {
         ...info,
-        fName:   form.fName,
-        lName:   form.lName,
-        pNo:     form.pNo,
+        fName: form.fName,
+        lName: form.lName,
+        pNo: form.pNo,
         address: form.address,
-        email:   form.email
+        email: form.email
       };
       await userService.updateCustomer(custId, updated);
       setInfo(updated);
@@ -80,7 +86,7 @@ function Profile() {
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       console.error(err);
-      alert('Không thể cập nhật thông tin, vui lòng thử lại.');
+      showNotify('error', 'Không thể cập nhật thông tin, vui lòng thử lại.')
     } finally {
       setSaving(false);
     }
@@ -92,10 +98,10 @@ function Profile() {
     </div>
   );
 
-  const displayFName   = info?.fName   || info?.FName   || '';
-  const displayLName   = info?.lName   || info?.LName   || '';
-  const displayEmail   = info?.email   || info?.Email   || '';
-  const displayPhone   = info?.pNo     || info?.PNo     || '';
+  const displayFName = info?.fName || info?.FName || '';
+  const displayLName = info?.lName || info?.LName || '';
+  const displayEmail = info?.email || info?.Email || '';
+  const displayPhone = info?.pNo || info?.PNo || '';
   const displayAddress = info?.address || info?.Address || '';
 
   return (
@@ -146,16 +152,16 @@ function Profile() {
             {!editing ? (
               <>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0', marginBottom: '28px' }}>
-                  <InfoRow icon="👤" label="Họ" value={displayLName || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
-                  <InfoRow icon="👤" label="Tên" value={displayFName || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
-                  <InfoRow icon="✉️" label="Email" value={displayEmail || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
-                  <InfoRow icon="📞" label="Số điện thoại" value={displayPhone || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
-                  <InfoRow icon="📍" label="Địa chỉ" value={displayAddress || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:bust-in-silhouette" width="18" />} label="Họ" value={displayLName || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:bust-in-silhouette" width="18" />} label="Tên" value={displayFName || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:envelope" width="18" />} label="Email" value={displayEmail || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:telephone-receiver" width="18" />} label="Số điện thoại" value={displayPhone || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
+                  <InfoRow icon={<Icon icon="noto:round-pushpin" width="18" />} label="Địa chỉ" value={displayAddress || <span style={{ color: '#ccc' }}>Chưa cập nhật</span>} />
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button onClick={handleEdit} style={btnPrimaryStyle}>
-                    ✏️ Chỉnh sửa thông tin
+                    <Icon icon="noto:pencil" width="18" /> Chỉnh sửa thông tin
                   </button>
                   <button onClick={() => navigate(-1)} style={btnSecondaryStyle}>
                     Quay lại
@@ -167,7 +173,7 @@ function Profile() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '28px' }}>
 
                   <div style={{ display: 'flex', gap: '12px' }}>
-                    <FormField label="Họ" icon="👤" style={{ flex: 1 }}>
+                    <FormField label="Họ" icon={<Icon icon="noto:bust-in-silhouette" width="18" />} style={{ flex: 1 }}>
                       <input
                         type="text"
                         value={form.lName}
@@ -176,7 +182,7 @@ function Profile() {
                         style={inputStyle}
                       />
                     </FormField>
-                    <FormField label="Tên" icon="👤" style={{ flex: 1 }}>
+                    <FormField label="Tên" icon={<Icon icon="noto:bust-in-silhouette" width="18" />} style={{ flex: 1 }}>
                       <input
                         type="text"
                         value={form.fName}
@@ -187,7 +193,7 @@ function Profile() {
                     </FormField>
                   </div>
 
-                  <FormField label="Email" icon="✉️">
+                  <FormField label="Email" icon={<Icon icon="noto:envelope" width="18" />}>
                     <input
                       type="email"
                       value={form.email}
@@ -197,7 +203,7 @@ function Profile() {
                     />
                   </FormField>
 
-                  <FormField label="Số điện thoại" icon="📞">
+                  <FormField label="Số điện thoại" icon={<Icon icon="noto:telephone-receiver" width="18" />}>
                     <input
                       type="tel"
                       value={form.pNo}
@@ -207,7 +213,7 @@ function Profile() {
                     />
                   </FormField>
 
-                  <FormField label="Địa chỉ" icon="📍">
+                  <FormField label="Địa chỉ" icon={<Icon icon="noto:round-pushpin" width="18" />}>
                     <textarea
                       value={form.address}
                       onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
@@ -220,7 +226,7 @@ function Profile() {
 
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <button type="submit" disabled={saving} style={{ ...btnPrimaryStyle, opacity: saving ? 0.7 : 1 }}>
-                    {saving ? 'Đang lưu...' : '💾 Lưu thay đổi'}
+                    {saving ? 'Đang lưu...' : <><Icon icon="noto:floppy-disk" width="18" /> Lưu thay đổi</>}
                   </button>
                   <button type="button" onClick={handleCancel} style={btnSecondaryStyle}>
                     Huỷ

@@ -3,6 +3,7 @@ import adminService from '../../services/adminService';
 import ActionButtons from '../../components/ActionButton';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
+import { Icon } from '@iconify/react';
 import '../../styles/admin/Dashboard.css';
 import '../../styles/admin/ProductPage.css';
 
@@ -37,8 +38,8 @@ function ProductPage() {
         adminService.getTemplates().catch(() => []),
         adminService.getProductGalleries().catch(() => []),
       ]);
-      setTemplates(Array.isArray(t) ? t : []);
-      setGalleries(Array.isArray(g) ? g : []);
+      setTemplates(Array.isArray(t) ? [...t].sort((a, b) => b.templateId - a.templateId) : []);
+      setGalleries(Array.isArray(g) ? [...g].sort((a, b) => b.galleryId - a.galleryId) : []);
     } finally {
       setLoading(false);
     }
@@ -150,10 +151,10 @@ function ProductPage() {
 
       <div className="tab-bar">
         <button className={`tab-btn ${tab === 'templates' ? 'active' : ''}`} onClick={() => setTab('templates')}>
-          🖼️ Mẫu sản phẩm ({templates.length})
+          <Icon icon="noto:framed-picture" width="18" /> Mẫu sản phẩm ({templates.length})
         </button>
         <button className={`tab-btn ${tab === 'gallery' ? 'active' : ''}`} onClick={() => setTab('gallery')}>
-          📷 Ảnh mẫu ({galleries.length})
+          <Icon icon="noto:camera-with-flash" width="18" /> Ảnh mẫu ({galleries.length})
         </button>
       </div>
 

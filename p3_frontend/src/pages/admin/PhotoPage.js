@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import adminService from '../../services/adminService';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
+import { Icon } from '@iconify/react';
 import '../../styles/admin/Dashboard.css';
 import '../../styles/admin/ProductPage.css';
 import '../../styles/admin/OrderPage.css';
@@ -36,9 +37,6 @@ function PhotoPage() {
   const folderPageSize = 12;
 
   const [viewPhoto, setViewPhoto] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
 
   const fetchAll = async () => {
     setLoading(true);
@@ -67,7 +65,11 @@ function PhotoPage() {
       }
       map[folder].photos.push(photo);
     });
-    return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
+    return Object.values(map).sort((a, b) => {
+      const aMax = Math.max(...a.photos.map(p => p.photoId));
+      const bMax = Math.max(...b.photos.map(p => p.photoId));
+      return bMax - aMax;
+    });
   }, [photos]);
 
   const filteredFolders = useMemo(() => {
@@ -85,32 +87,20 @@ function PhotoPage() {
 
   const pagedFolders = filteredFolders.slice((page - 1) * pageSize, page * pageSize);
 
-  const folderPhotos = openFolder ? openFolder.photos : [];
-  const pagedFolderPhotos = folderPhotos.slice((folderPage - 1) * folderPageSize, folderPage * folderPageSize);
+  const folderPhotos = openFolder
+    ? [...openFolder.photos].sort((a, b) => b.photoId - a.photoId)
+    : [];
 
-  const handleDeleteFolder = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    setDeleteError('');
-    try {
-      await adminService.deletePhotoFolder(deleteTarget.name);
-    } catch {
-      try {
-        await Promise.all(deleteTarget.photos.map(p => adminService.deletePhoto(p.photoId)));
-      } catch (err2) {
-        setDeleteError('Xóa thất bại: ' + (err2?.response?.data?.message || err2.message));
-        setDeleting(false);
-        return;
-      }
-    }
-    setDeleteTarget(null);
-    setDeleting(false);
-    if (openFolder?.name === deleteTarget.name) setOpenFolder(null);
-    fetchAll();
-  };
+  const pagedFolderPhotos = folderPhotos.slice(
+    (folderPage - 1) * folderPageSize,
+    folderPage * folderPageSize
+  );
 
   if (loading) return (
-    <div className="dash-loading"><div className="dash-spinner" /><p>Đang tải...</p></div>
+    <div className="dash-loading">
+      <div className="dash-spinner" />
+      <p>Đang tải...</p>
+    </div>
   );
 
   return (
@@ -119,11 +109,16 @@ function PhotoPage() {
         <div>
           {openFolder ? (
             <div className="photo-breadcrumb">
-              <button className="folder-back-btn" onClick={() => { setOpenFolder(null); setFolderPage(1); }}>
+              <button
+                className="folder-back-btn"
+                onClick={() => { setOpenFolder(null); setFolderPage(1); }}
+              >
                 ← Kho ảnh
               </button>
               <span className="folder-crumb-sep">/</span>
-              <span className="folder-crumb-name">📁 {openFolder.name}</span>
+              <span className="folder-crumb-name">
+                <Icon icon="noto:file-folder" width="18" /> {openFolder.name}
+              </span>
             </div>
           ) : (
             <>
@@ -132,21 +127,13 @@ function PhotoPage() {
             </>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {openFolder && (
-            <button
-              className="btn btn-delete"
-              style={{ fontWeight: 600 }}
-              onClick={() => { setDeleteTarget(openFolder); setDeleteError(''); }}
-            >
-              🗑 Xóa thư mục
-            </button>
-          )}
-          <button className="btn-primary" onClick={fetchAll}>↻ Làm mới</button>
-        </div>
+
+        <button className="btn-primary" onClick={fetchAll}>
+          ↻ Làm mới
+        </button>
       </div>
 
-      {/* FOLDER LIST VIEW */}
+      {/* FOLDER LIST */}
       {!openFolder && (
         <div className="section-card">
           <div className="section-header">
@@ -155,14 +142,19 @@ function PhotoPage() {
               className="search-input"
               placeholder="Tìm theo tên folder, ID hoặc tên khách..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
 
           {pagedFolders.length === 0 ? (
             <div className="folder-grid">
               <div className="folder-empty">
-                <div className="folder-empty-icon">📂</div>
+                <div className="folder-empty-icon">
+                  <Icon icon="noto:file-folder" width="64" />
+                </div>
                 <p className="folder-empty-text">Không có thư mục ảnh nào</p>
               </div>
             </div>
@@ -171,6 +163,7 @@ function PhotoPage() {
               {pagedFolders.map(folder => {
                 const cust = getCustomer(folder.custId);
                 const thumb = folder.photos.find(p => p.filePath)?.filePath;
+
                 const latestDate = folder.photos.reduce((max, p) => {
                   const d = new Date(p.uploadDate);
                   return d > max ? d : max;
@@ -180,39 +173,45 @@ function PhotoPage() {
                   <div
                     key={folder.name}
                     className="folder-card"
-                    onClick={() => { setOpenFolder(folder); setFolderPage(1); }}
+                    onClick={() => {
+                      setOpenFolder(folder);
+                      setFolderPage(1);
+                    }}
                   >
                     <div className="folder-thumb">
-                      {thumb ? (
+                      {thumb && (
                         <img
                           src={getImgUrl(thumb)}
                           alt={folder.name}
-                          onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
                         />
-                      ) : null}
-                      <div className="folder-icon-fallback" style={{ display: thumb ? 'none' : 'flex' }}>
-                        📁
+                      )}
+                      <div className="folder-icon-fallback">
+                        <Icon icon="noto:file-folder" width="40" />
                       </div>
-                      <div className="folder-count-badge">{folder.photos.length} ảnh</div>
+                      <div className="folder-count-badge">
+                        {folder.photos.length} ảnh
+                      </div>
                     </div>
+
                     <div className="folder-info">
-                      <p className="folder-name" title={folder.name}>{folder.name}</p>
+                      <p className="folder-name">{folder.name}</p>
                       <p className="folder-meta">
-                        👤 {cust ? `${cust.fName} ${cust.lName}` : `Khách #${folder.custId}`}
+                        <Icon icon="noto:bust-in-silhouette" width="14" /> {cust
+                          ? `${cust.fName} ${cust.lName}`
+                          : `Khách #${folder.custId}`}
                       </p>
                       <p className="folder-meta">
-                        📅 {latestDate.getTime() > 0
-                          ? latestDate.toLocaleDateString('vi-VN')
-                          : '—'}
+                        <Icon icon="noto:calendar" width="14" /> {
+                          latestDate.getTime() > 0
+                            ? latestDate.toLocaleDateString('vi-VN')
+                            : '—'
+                        }
                       </p>
                     </div>
-                    <button
-                      className="folder-delete-btn"
-                      title="Xóa thư mục"
-                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(folder); setDeleteError(''); }}
-                    >
-                      🗑
-                    </button>
                   </div>
                 );
               })}
@@ -231,27 +230,25 @@ function PhotoPage() {
         </div>
       )}
 
-      {/* FOLDER DETAIL VIEW */}
+      {/* FOLDER DETAIL */}
       {openFolder && (
         <div className="section-card">
           <div className="section-header">
-            <h3>
-              {folderPhotos.length} ảnh trong thư mục
-            </h3>
+            <h3>{folderPhotos.length} ảnh trong thư mục</h3>
             {openFolder.custId && (() => {
               const c = getCustomer(openFolder.custId);
-              return c ? (
+              return c && (
                 <span style={{ fontSize: '0.85rem', color: '#666' }}>
-                  👤 {c.fName} {c.lName}
+                  <Icon icon="noto:bust-in-silhouette" width="16" /> {c.fName} {c.lName}
                 </span>
-              ) : null;
+              );
             })()}
           </div>
 
           {folderPhotos.length === 0 ? (
             <div className="photo-grid">
               <div className="folder-empty">
-                <div className="folder-empty-icon">🖼️</div>
+                <Icon icon="noto:framed-picture" width="40" />
                 <p className="folder-empty-text">Thư mục không có ảnh nào</p>
               </div>
             </div>
@@ -264,16 +261,25 @@ function PhotoPage() {
                     onClick={() => setViewPhoto(photo)}
                   >
                     <img
-                      src={getImgUrl(photo.filePath) || 'https://placehold.co/200x150?text=No+Image'}
+                      src={getImgUrl(photo.filePath) || 'https://placehold.co/200x150'}
                       alt={photo.fileName}
-                      onError={(e) => { e.target.src = 'https://placehold.co/200x150?text=Lỗi'; }}
+                      onError={(e) => {
+                        e.target.src = 'https://placehold.co/200x150?text=Lỗi';
+                      }}
                     />
-                    <div className="photo-overlay">🔍 Xem</div>
+                    <div className="photo-overlay">
+                      <Icon icon="noto:eye" width="16" /> Xem
+                    </div>
                   </div>
+
                   <div className="photo-card-info">
-                    <p className="photo-name" title={photo.fileName}>{photo.fileName}</p>
+                    <p className="photo-name">{photo.fileName}</p>
                     <p className="photo-meta">
-                      📅 {photo.uploadDate ? new Date(photo.uploadDate).toLocaleDateString('vi-VN') : '—'}
+                      <Icon icon="noto:calendar" width="14" /> {
+                        photo.uploadDate
+                          ? new Date(photo.uploadDate).toLocaleDateString('vi-VN')
+                          : '—'
+                      }
                     </p>
                   </div>
                 </div>
@@ -300,73 +306,26 @@ function PhotoPage() {
           onClose={() => setViewPhoto(null)}
           title={viewPhoto.fileName}
           size="medium"
-          footer={<button className="modal-btn modal-cancel-btn" onClick={() => setViewPhoto(null)}>Đóng</button>}
+          footer={
+            <button
+              className="modal-btn modal-cancel-btn"
+              onClick={() => setViewPhoto(null)}
+            >
+              Đóng
+            </button>
+          }
         >
           <div style={{ textAlign: 'center' }}>
             <img
-              src={getImgUrl(viewPhoto.filePath) || 'https://placehold.co/400x300?text=No+Image'}
+              src={getImgUrl(viewPhoto.filePath)}
               alt={viewPhoto.fileName}
-              style={{ maxWidth: '100%', maxHeight: 420, borderRadius: 8, border: '1px solid #eee' }}
-              onError={(e) => { e.target.src = 'https://placehold.co/400x300?text=Lỗi+ảnh'; }}
+              style={{
+                maxWidth: '100%',
+                maxHeight: 420,
+                borderRadius: 8,
+                border: '1px solid #eee'
+              }}
             />
-            <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6, textAlign: 'left' }}>
-              {[
-                ['Tên file', viewPhoto.fileName],
-                ['Thư mục', getFolder(viewPhoto.filePath)],
-                ['Khách hàng', `#${viewPhoto.custId}`],
-                ['Ngày upload', viewPhoto.uploadDate ? new Date(viewPhoto.uploadDate).toLocaleString('vi-VN') : '—'],
-              ].map(([label, val]) => (
-                <div key={label} style={{ display: 'flex', gap: 10, fontSize: '0.87rem' }}>
-                  <span style={{ fontWeight: 600, color: '#666', minWidth: 90 }}>{label}:</span>
-                  <span style={{ color: '#333', wordBreak: 'break-all' }}>{val}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {/* DELETE FOLDER MODAL */}
-      {deleteTarget && (
-        <Modal
-          isOpen={!!deleteTarget}
-          onClose={() => !deleting && setDeleteTarget(null)}
-          title="Xóa thư mục ảnh"
-          size="small"
-          footer={
-            <>
-              <button
-                className="modal-btn modal-cancel-btn"
-                onClick={() => setDeleteTarget(null)}
-                disabled={deleting}
-              >
-                Hủy
-              </button>
-              <button
-                className="modal-btn modal-delete-btn"
-                onClick={handleDeleteFolder}
-                disabled={deleting}
-              >
-                {deleting ? 'Đang xóa...' : '🗑 Xóa thư mục'}
-              </button>
-            </>
-          }
-        >
-          <div className="delete-folder-body">
-            <div className="delete-folder-icon">⚠️</div>
-            <p className="delete-folder-title">
-              Xóa thư mục <strong>"{deleteTarget.name}"</strong>?
-            </p>
-            <p className="delete-folder-desc">
-              Thư mục này chứa <strong>{deleteTarget.photos.length} ảnh</strong>.
-              Tất cả ảnh sẽ bị xóa vĩnh viễn khỏi máy chủ và không thể khôi phục.
-            </p>
-            <div className="delete-folder-note">
-              📦 Thao tác này thường thực hiện sau khi đơn hàng đã được in và giao thành công cho khách hàng.
-            </div>
-            {deleteError && (
-              <p style={{ color: '#ff4d4f', marginTop: 10, fontSize: '0.85rem' }}>{deleteError}</p>
-            )}
           </div>
         </Modal>
       )}

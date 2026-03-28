@@ -3,6 +3,7 @@ import adminService from '../../services/adminService';
 import ActionButtons from '../../components/ActionButton';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
+import { Icon } from '@iconify/react';
 import '../../styles/admin/Dashboard.css';
 import '../../styles/admin/ProductPage.css';
 import '../../styles/admin/OrderPage.css';
@@ -32,8 +33,8 @@ function CustomerPage() {
         adminService.getAllCustomers().catch(() => []),
         adminService.getAllAdmins().catch(() => []),
       ]);
-      setCustomers(Array.isArray(c) ? c : []);
-      setAdmins(Array.isArray(a) ? a : []);
+      setCustomers(Array.isArray(c) ? [...c].sort((a, b) => b.custId - a.custId) : []);
+      setAdmins(Array.isArray(a) ? [...a].sort((a, b) => b.adminId - a.adminId) : []);
     } finally {
       setLoading(false);
     }
@@ -57,15 +58,6 @@ function CustomerPage() {
       fetchAll();
     } catch (err) {
       alert('Lỗi: ' + (err?.response?.data?.message || err.message));
-    }
-  };
-
-  const handleDeleteCustomer = async (id) => {
-    try {
-      await adminService.deleteCustomer(id);
-      fetchAll();
-    } catch (err) {
-      alert('Không thể xóa: ' + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -104,15 +96,6 @@ function CustomerPage() {
     }
   };
 
-  const handleDeleteAdmin = async (id) => {
-    try {
-      await adminService.deleteAdmin(id);
-      fetchAll();
-    } catch (err) {
-      alert('Không thể xóa: ' + (err?.response?.data?.message || err.message));
-    }
-  };
-
   if (loading) return (
     <div className="dash-loading"><div className="dash-spinner" /><p>Đang tải...</p></div>
   );
@@ -128,10 +111,10 @@ function CustomerPage() {
 
       <div className="tab-bar">
         <button className={`tab-btn ${tab === 'customers' ? 'active' : ''}`} onClick={() => setTab('customers')}>
-          👥 Khách hàng ({customers.length})
+          <Icon icon="noto:busts-in-silhouette" width="18" /> Khách hàng ({customers.length})
         </button>
         <button className={`tab-btn ${tab === 'admins' ? 'active' : ''}`} onClick={() => setTab('admins')}>
-          🔑 Quản trị viên ({admins.length})
+          <Icon icon="noto:key" width="18" /> Quản trị viên ({admins.length})
         </button>
       </div>
 
@@ -178,7 +161,6 @@ function CustomerPage() {
                       <ActionButtons
                         onView={() => { setViewCustomer(c); setShowCustomerModal(true); }}
                         onEdit={() => toggleActive(c)}
-                        onDelete={() => handleDeleteCustomer(c.custId)}
                         editText={c.isActive ? 'Khóa' : 'Mở khóa'}
                         viewText="Chi tiết"
                       />
@@ -226,7 +208,6 @@ function CustomerPage() {
                     <td>
                       <ActionButtons
                         onEdit={() => openEditAdmin(a)}
-                        onDelete={() => handleDeleteAdmin(a.adminId)}
                         showView={false}
                       />
                     </td>

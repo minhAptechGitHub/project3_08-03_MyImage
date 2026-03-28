@@ -280,3 +280,13 @@
     width: 100%;
   }
 }
+
+.feature-icon svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.15);
+  transition: 0.2s;
+}
