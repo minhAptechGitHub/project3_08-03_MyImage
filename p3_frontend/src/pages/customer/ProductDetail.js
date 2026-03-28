@@ -46,8 +46,8 @@ function ProductDetail() {
         <div className="pd-breadcrumb">
           <span onClick={() => navigate('/')} className="bc-link">Trang chủ</span>
           <span className="bc-sep">›</span>
-          <span onClick={() => navigate('/products')} className="bc-link">Dịch vụ</span>
-          <span className="bc-sep">›</span>
+          {/* <span onClick={() => navigate('/products')} className="bc-link">Dịch vụ</span>
+          <span className="bc-sep">›</span> */}
           <span className="bc-current">{template.templateName}</span>
         </div>
 

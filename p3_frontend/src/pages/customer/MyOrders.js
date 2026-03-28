@@ -153,9 +153,11 @@ function MyOrders() {
                         {status.label}
                       </span>
                       <span className="order-total">
-                        {custom
-                          ? 'Chờ báo giá'
-                          : `${Number(order.totalPrice || 0).toLocaleString('vi-VN')}đ`
+                        {isOpen
+                          ? null
+                          : custom
+                            ? 'Chờ báo giá'
+                            : `${Number(order.totalPrice || 0).toLocaleString('vi-VN')}đ`
                         }
                       </span>
                       <span className="expand-icon">
