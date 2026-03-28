@@ -22,8 +22,19 @@ tao clone tu git
 -tu tao file appsettings.json(lay tu cac bai khac) va them : 
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server:'server sql connect';Database=p3_MyImage_2;Trusted_Connection=True;TrustServerCertificate=True"
-  }
+    "DefaultConnection": "Server:'server sql connect';Database=p3_MyImage_3;Trusted_Connection=True;TrustServerCertificate=True"
+  },
+  "Vnpay": {
+    "TmnCode": "YOUR_TMN_CODE",
+    "HashSecret": "YOUR_HASH_SECRET",
+    "BaseUrl": "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
+    "Command": "pay",
+    "CurrCode": "VND",
+    "Version": "2.1.0",
+    "Locale": "vn",
+    "PaymentBackReturnUrl": "http://localhost:3000/VnPay/callback"
+  },
+  "TimeZoneId": "SE Asia Standard Time"
 }
 
 -roi chay thu

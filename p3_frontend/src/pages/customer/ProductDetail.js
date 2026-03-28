@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import userService from '../../services/userService';
 import '../../styles/customer/productDetail.css';
 
+import { Icon } from '@iconify/react';
+
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -79,7 +81,10 @@ function ProductDetail() {
             <h1 className="pd-title">{template.templateName}</h1>
 
             <div className="pd-meta">
-              <span className="pd-leadtime">🕐 Thời gian: {template.leadTime}</span>
+              <span className="pd-leadtime">
+                <Icon icon="twemoji:alarm-clock" width="18" style={{ marginRight: '6px' }} />
+                Thời gian: {template.leadTime}
+              </span>
             </div>
 
             {template.details && (

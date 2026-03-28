@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import userService from '../../services/userService';
 import '../../styles/customer/customOrder.css';
+import { Icon } from '@iconify/react';
+
+import { useOutletContext } from 'react-router-dom';
 
 import { useOutletContext } from 'react-router-dom';
 
@@ -80,7 +83,6 @@ function CustomOrder() {
     if (!validate()) return;
     setSubmitting(true);
 
-    
     try {
       const draft = await userService.createDraftOrder({
         custId: user.custId,
@@ -141,12 +143,21 @@ function CustomOrder() {
     return (
       <div className="custom-order-page">
         <div className="custom-success">
-          <div className="success-icon">🎉</div>
+          <div className="success-icon">
+            <Icon icon="twemoji:party-popper" width="40" />
+          </div>
           <h2>Gửi yêu cầu thành công!</h2>
           <p>Chúng tôi sẽ liên hệ với bạn qua email hoặc điện thoại để xác nhận đơn in theo yêu cầu.</p>
           <div className="success-actions">
-            <button className="btn-back" onClick={() => navigate('/')}>Về trang chủ</button>
-            <button className="btn-next" onClick={() => navigate('/orders')}>Xem đơn hàng →</button>
+            <button className="btn-back" onClick={() => navigate('/')}>
+              <Icon icon="twemoji:house" style={{ marginRight: '6px' }} />
+              Về trang chủ
+            </button>
+
+            <button className="btn-next" onClick={() => navigate('/orders')}>
+              Xem đơn hàng
+              <Icon icon="twemoji:right-arrow" style={{ marginLeft: '6px' }} />
+            </button>
           </div>
         </div>
       </div>
@@ -158,6 +169,21 @@ function CustomOrder() {
       <div className="custom-order-header">
         <h1>In ảnh theo yêu cầu</h1>
         <p>Điền thông tin và upload file — chúng tôi sẽ tư vấn & báo giá cho bạn</p>
+        <div style={{ width: '100%', textAlign: 'left', marginBottom: '8px', marginLeft: '200px' }}>
+          <span
+            onClick={() => navigate(-1)}
+            style={{
+              color: '#2196f3',
+              cursor: 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            ← Quay lại
+          </span>
+        </div>
       </div>
 
       <div className="custom-order-body">
@@ -165,7 +191,8 @@ function CustomOrder() {
         {/* LEFT: FORM */}
         <div className="custom-form-panel">
           <div className="panel-title">
-            <span>👤</span> Thông tin khách hàng
+            <Icon icon="twemoji:bust-in-silhouette" width="20" style={{ marginRight: '6px' }} />
+            Thông tin khách hàng
           </div>
 
           <div className="form-grid">
@@ -234,7 +261,12 @@ function CustomOrder() {
           </div>
 
           <button className="btn-submit" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? 'Đang gửi...' : '📤 Gửi yêu cầu'}
+            {submitting ? 'Đang gửi...' : (
+              <>
+                <Icon icon="twemoji:outbox-tray" style={{ marginRight: '6px' }} />
+                Gửi yêu cầu
+              </>
+            )}
           </button>
         </div>
 
@@ -260,7 +292,9 @@ function CustomOrder() {
               onChange={handleFileInput}
               hidden
             />
-            <div className="drop-icon">📂</div>
+            <div className="drop-icon">
+              <Icon icon="twemoji:file-folder" width="40" />
+            </div>
             <p>Kéo và thả hình của bạn<br />hoặc click vào đây</p>
             <span>Định dạng hỗ trợ: JPG, PNG, WEBP</span>
           </div>
@@ -274,7 +308,9 @@ function CustomOrder() {
               {photos.map((p, i) => (
                 <div key={i} className="upload-thumb">
                   <img src={p.preview} alt={p.name} />
-                  <button onClick={() => removePhoto(i)}>✕</button>
+                  <button onClick={() => removePhoto(i)}>
+                    <Icon icon="twemoji:cross-mark" />
+                  </button>
                   <span>{p.name}</span>
                 </div>
               ))}

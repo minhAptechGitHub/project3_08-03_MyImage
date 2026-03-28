@@ -453,3 +453,14 @@
   background: #eaf4ff;
   transform: scale(1.01);
 }
+
+.vnpay-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.payment-option:hover .vnpay-logo {
+  transform: scale(1.1);
+}
