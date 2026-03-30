@@ -44,6 +44,7 @@ namespace p3_backend.Controllers
                     o.TotalPrice,
                     o.ShippingAddress,
                     o.Status,
+                    o.PaymentMethod,
                     o.ProcessedByAdminId,
                     Cust = o.Cust == null ? null : new
                     {
@@ -240,6 +241,28 @@ namespace p3_backend.Controllers
             if (status == "Completed")
             {
                 await DeletePhotoFolderForOrder(order);
+            }
+
+            return NoContent();
+        }
+
+        // PUT: api/Orders/PaymentMethod/{id}
+        [HttpPut("PaymentMethod/{id}")]
+        public async Task<IActionResult> PutPaymentMethod(int id, [FromBody] string paymentMethod)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return NotFound();
+
+            order.PaymentMethod = paymentMethod;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!OrderExists(id)) return NotFound();
+                else throw;
             }
 
             return NoContent();
