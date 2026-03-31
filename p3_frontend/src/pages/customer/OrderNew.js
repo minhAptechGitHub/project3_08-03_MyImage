@@ -200,14 +200,8 @@ function OrderNew() {
         const vnpayUrl = res.paymentUrl;
         window.location.href = vnpayUrl;
       } else {
-        // 3b. COD: cập nhật PaymentMethod vào Orders + tạo bản ghi Payment
+        // 3b. COD: cập nhật PaymentMethod vào Orders
         await userService.updateOrderPaymentMethod(draftOrderId, 'COD');
-        await userService.createPayment({
-          orderId: draftOrderId,
-          paymentMethod: 'COD',
-          paymentStatus: 'Pending',
-          paymentDate: new Date().toISOString()
-        });
         setStep(5);
       }
     } catch (err) {

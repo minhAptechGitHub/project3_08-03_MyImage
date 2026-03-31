@@ -21,23 +21,20 @@ const userService = {
   getTemplateById: (templateId) => axiosClient.get(`/producttemplates/${templateId}`),
 
   // ORDERS
-createDraftOrder: (orderData) => axiosClient.post('/orders', orderData),
-createOrder: (orderData) => axiosClient.post('/orders', orderData),
-createOrderDetail: (detailData) => axiosClient.post('/orderdetails', detailData),
-updateOrder: (orderId, orderData) => axiosClient.put(`/orders/${orderId}`, orderData),
-updateOrderPaymentMethod: (orderId, method) =>
-  axiosClient.put(`/orders/PaymentMethod/${orderId}`, JSON.stringify(method), {
-    headers: { 'Content-Type': 'application/json' }
-  }),
-getMyOrders: (custId) => axiosClient.get(`/orders/customer/${custId}/details`),
-cancelOrder: (orderId) =>
-  axiosClient.put(`/orders/Status/${orderId}`, JSON.stringify('Cancelled'), {
-    headers: { 'Content-Type': 'application/json' }
-  }),
-  
-  // PAYMENTS
-  createPayment: (paymentData) => axiosClient.post('/payments', paymentData),
-
+  createDraftOrder: (orderData) => axiosClient.post('/orders', orderData),
+  createOrder: (orderData) => axiosClient.post('/orders', orderData),
+  createOrderDetail: (detailData) => axiosClient.post('/orderdetails', detailData),
+  updateOrder: (orderId, orderData) => axiosClient.put(`/orders/${orderId}`, orderData),
+  updateOrderPaymentMethod: (orderId, method) =>
+    axiosClient.put(`/orders/PaymentMethod/${orderId}`, JSON.stringify(method), {
+      headers: { 'Content-Type': 'application/json' }
+    }),
+  getMyOrders: (custId) => axiosClient.get(`/orders/customer/${custId}/details`),
+  cancelOrder: (orderId) =>
+    axiosClient.put(`/orders/Status/${orderId}`, JSON.stringify('Cancelled'), {
+      headers: { 'Content-Type': 'application/json' }
+    }),
+    
   // VNPAY
   createVnPayUrl: (orderId, amount) =>
     axiosClient.post('/vnpay/create-payment-url', { orderId, amount }),

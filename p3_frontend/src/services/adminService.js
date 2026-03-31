@@ -36,12 +36,6 @@ const adminService = {
   updateOrderDetail: (id, data) => axiosClient.put(`/orderdetails/${id}`, data),
   deleteOrderDetail: (id) => axiosClient.delete(`/orderdetails/${id}`),
 
-  getPayments: () => axiosClient.get('/payments'),
-  getPaymentById: (id) => axiosClient.get(`/payments/${id}`),
-  createPayment: (data) => axiosClient.post('/payments', data),
-  updatePayment: (id, data) => axiosClient.put(`/payments/${id}`, data),
-  deletePayment: (id) => axiosClient.delete(`/payments/${id}`),
-
   getAllCustomers: () => axiosClient.get('/customers'),
   getCustomerById: (id) => axiosClient.get(`/customers/${id}`),
   updateCustomer: (id, data) => axiosClient.put(`/customers/${id}`, data),

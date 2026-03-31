@@ -23,8 +23,6 @@ public partial class P3MyImage3Context : DbContext
 
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
 
-    public virtual DbSet<Payment> Payments { get; set; }
-
     public virtual DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
     public virtual DbSet<Photo> Photos { get; set; }
@@ -39,9 +37,9 @@ public partial class P3MyImage3Context : DbContext
     {
         modelBuilder.Entity<Admin>(entity =>
         {
-            entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA41419C448447");
+            entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA4141B6DC4BB6");
 
-            entity.HasIndex(e => e.Username, "UQ__Admins__F3DBC57284AF773D").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Admins__F3DBC572CBAFD352").IsUnique();
 
             entity.Property(e => e.AdminId).HasColumnName("admin_id");
             entity.Property(e => e.CreatedAt)
@@ -62,11 +60,11 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.CustId).HasName("PK__Customer__A1B71F908F98CBDD");
+            entity.HasKey(e => e.CustId).HasName("PK__Customer__A1B71F909AA68E72");
 
-            entity.HasIndex(e => e.Email, "UQ__Customer__AB6E616490511928").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Customer__AB6E616404049E52").IsUnique();
 
-            entity.HasIndex(e => e.Username, "UQ__Customer__F3DBC572D7C18EBE").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Customer__F3DBC57296FE05B3").IsUnique();
 
             entity.Property(e => e.CustId).HasColumnName("cust_id");
             entity.Property(e => e.Address)
@@ -116,9 +114,9 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("PK__Orders__465962291A646712");
+            entity.HasKey(e => e.OrderId).HasName("PK__Orders__465962295A706331");
 
-            entity.HasIndex(e => e.FolderName, "UQ__Orders__3AFC5A911F1507A1").IsUnique();
+            entity.HasIndex(e => e.FolderName, "UQ__Orders__3AFC5A91854FEE02").IsUnique();
 
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.CustId).HasColumnName("cust_id");
@@ -162,7 +160,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
-            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__3C5A4080EBD3A6C6");
+            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__3C5A4080667871BD");
 
             entity.Property(e => e.OrderDetailId).HasColumnName("order_detail_id");
             entity.Property(e => e.LineTotal)
@@ -192,35 +190,6 @@ public partial class P3MyImage3Context : DbContext
             entity.HasOne(d => d.Size).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.SizeId)
                 .HasConstraintName("FK_OrderDetails_PrintSizes");
-        });
-
-        modelBuilder.Entity<Payment>(entity =>
-        {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EA62651885");
-
-            entity.HasIndex(e => e.OrderId, "UQ__Payments__46596228DF246BED").IsUnique();
-
-            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
-            entity.Property(e => e.OrderId).HasColumnName("order_id");
-            entity.Property(e => e.PaymentDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime")
-                .HasColumnName("payment_date");
-            entity.Property(e => e.PaymentMethod)
-                .IsRequired()
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("payment_method");
-            entity.Property(e => e.PaymentStatus)
-                .IsRequired()
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasDefaultValue("Pending")
-                .HasColumnName("payment_status");
-
-            entity.HasOne(d => d.Order).WithOne(p => p.Payment)
-                .HasForeignKey<Payment>(d => d.OrderId)
-                .HasConstraintName("FK_Payments_Orders");
         });
 
         modelBuilder.Entity<PaymentTransaction>(entity =>
@@ -266,7 +235,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<Photo>(entity =>
         {
-            entity.HasKey(e => e.PhotoId).HasName("PK__Photos__CB48C83DAD6FF98B");
+            entity.HasKey(e => e.PhotoId).HasName("PK__Photos__CB48C83D8F6059FE");
 
             entity.Property(e => e.PhotoId).HasColumnName("photo_id");
             entity.Property(e => e.CustId).HasColumnName("cust_id");
@@ -292,7 +261,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<PrintSize>(entity =>
         {
-            entity.HasKey(e => e.SizeId).HasName("PK__PrintSiz__0DCACE31503B8203");
+            entity.HasKey(e => e.SizeId).HasName("PK__PrintSiz__0DCACE3150D56176");
 
             entity.Property(e => e.SizeId).HasColumnName("size_id");
             entity.Property(e => e.CreatedAt)
@@ -319,7 +288,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<ProductGallery>(entity =>
         {
-            entity.HasKey(e => e.GalleryId).HasName("PK__ProductG__43D54A717772AC7F");
+            entity.HasKey(e => e.GalleryId).HasName("PK__ProductG__43D54A71B3F24DC5");
 
             entity.ToTable("ProductGallery");
 
@@ -341,7 +310,7 @@ public partial class P3MyImage3Context : DbContext
 
         modelBuilder.Entity<ProductTemplate>(entity =>
         {
-            entity.HasKey(e => e.TemplateId).HasName("PK__ProductT__BE44E07917BE5C50");
+            entity.HasKey(e => e.TemplateId).HasName("PK__ProductT__BE44E079A39FA766");
 
             entity.Property(e => e.TemplateId).HasColumnName("template_id");
             entity.Property(e => e.Details).HasColumnName("details");

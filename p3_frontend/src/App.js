@@ -26,6 +26,7 @@ import Profile from './pages/customer/ProfileCustomer';
 import VnPayCallback from './pages/customer/VnPayCallback';
 
 import './App.css';
+import ProductList from './pages/customer/ProductList';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -170,6 +171,7 @@ function App() {
         >
           <Route index element={<Home />} />
           <Route path="product/:id" element={<ProductDetail />} />
+          <Route path="productList" element={<ProductList />} />
           <Route path="order/new" element={<OrderNew />} />
           <Route path="order/custom" element={<CustomOrder />} />
           <Route path="orders" element={<MyOrders />} />

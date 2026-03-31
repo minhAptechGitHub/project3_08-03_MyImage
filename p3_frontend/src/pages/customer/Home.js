@@ -6,6 +6,8 @@ import '../../styles/customer/customer.css';
 
 import { Icon } from '@iconify/react';
 
+const photoUrl = 'http://localhost:5002/uploads';
+
 function Home() {
     const [products, setProducts] = useState([]);
     const navigate = useNavigate();
@@ -105,7 +107,7 @@ function Home() {
                                 >
                                     <div className="product-card-img">
                                         <img
-                                            src={product.imageUrl ? `http://localhost:5002/${product.imageUrl}` : 'https://placehold.co/400x300?text=No+Image'}
+                                            src={product.imageUrl ? `${photoUrl}/${product.imageUrl}` : 'https://placehold.co/400x300?text=No+Image'}
                                             alt={product.templateName}
                                             loading="lazy"
                                             onError={(e) => { e.target.src = 'https://placehold.co/400x300?text=No+Image'; }}

@@ -345,7 +345,7 @@ function OrderPage() {
                             {d.photo?.filePath ? (
                               <img
                                 src={`http://localhost:5002/${d.photo.filePath}`}
-                                alt="photo"
+                                alt={`${d.photo.file_path}`}
                                 className="order-thumb"
                                 onError={(e) => { e.target.style.display = 'none'; }}
                               />

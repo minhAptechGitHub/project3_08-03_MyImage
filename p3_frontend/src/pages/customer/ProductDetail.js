@@ -5,6 +5,8 @@ import '../../styles/customer/productDetail.css';
 
 import { Icon } from '@iconify/react';
 
+const photoUrl = 'http://localhost:5002/uploads';
+
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -56,7 +58,7 @@ function ProductDetail() {
           <div className="pd-gallery">
             <div className="pd-main-img">
               <img
-                src={`http://localhost:5002/${selectedImg}`}
+                src={`${photoUrl}/${selectedImg}`}
                 alt={template.templateName}
                 onError={e => { e.target.src = 'https://placehold.co/400x300?text=Error+Image'; }}
               />
@@ -66,7 +68,7 @@ function ProductDetail() {
                 {allImages.map((img, i) => (
                   <img
                     key={i}
-                    src={`http://localhost:5002/${img}`}
+                    src={`${photoUrl}/${img}`}
                     alt={`Ảnh mẫu ${i + 1}`}
                     className={selectedImg === img ? 'active' : ''}
                     onClick={() => setSelectedImg(img)}
