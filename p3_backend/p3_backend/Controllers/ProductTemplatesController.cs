@@ -21,7 +21,6 @@ namespace p3_backend.Controllers
         }
 
         // GET: api/ProductTemplates
-        // Lấy danh sách tất cả các loại dịch vụ (Canvas, Rửa ảnh, Polaroid...)
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductTemplate>>> GetProductTemplates()
         {
@@ -31,40 +30,66 @@ namespace p3_backend.Controllers
         }
 
         // GET: api/ProductTemplates/5
-        // Lấy chi tiết 1 loại dịch vụ kèm theo các Size và Gallery của nó
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<ProductTemplate>> GetProductTemplate(int id)
         {
             var productTemplate = await _context.ProductTemplates
-                .Include(t => t.PrintSizes)     // Lấy luôn danh sách các kích thước (10x15, 13x18...)
-                .Include(t => t.ProductGalleries) // Lấy luôn danh sách ảnh mẫu demo
+                .Include(t => t.PrintSizes)
+                .Include(t => t.ProductGalleries)
                 .FirstOrDefaultAsync(t => t.TemplateId == id);
 
             if (productTemplate == null)
-            {
                 return NotFound(new { message = "Không tìm thấy loại sản phẩm này." });
-            }
 
             return productTemplate;
         }
 
+        // GET: api/ProductTemplates/active
+        // GET: api/ProductTemplates/active?category=photobook
         [HttpGet("active")]
-        public async Task<ActionResult<IEnumerable<ProductTemplate>>> GetActiveTemplates()
+        public async Task<ActionResult<IEnumerable<ProductTemplate>>> GetActiveTemplates(
+            [FromQuery] string? category = null)
+        {
+            var query = _context.ProductTemplates
+                .Where(t => t.IsActive);
+
+            if (!string.IsNullOrEmpty(category))
+                query = query.Where(t => t.Category == category);
+
+            return await query.OrderBy(t => t.TemplateId).ToListAsync();
+        }
+
+        // GET: api/ProductTemplates/category/in-anh
+        [HttpGet("category/{category}")]
+        public async Task<ActionResult<IEnumerable<ProductTemplate>>> GetTemplatesByCategory(string category)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+                return BadRequest(new { message = "Danh mục không hợp lệ." });
+
+            var templates = await _context.ProductTemplates
+                .Where(t => t.IsActive && t.Category == category)
+                .OrderBy(t => t.TemplateId)
+                .ToListAsync();
+
+            return Ok(templates);
+        }
+
+        // GET: api/ProductTemplates/featured
+        [HttpGet("featured")]
+        public async Task<ActionResult<IEnumerable<ProductTemplate>>> GetFeaturedTemplates()
         {
             return await _context.ProductTemplates
-                .Where(t => t.IsActive)
+                .Where(t => t.IsActive && t.IsFeatured)
                 .OrderBy(t => t.TemplateId)
                 .ToListAsync();
         }
 
         // PUT: api/ProductTemplates/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> PutProductTemplate(int id, ProductTemplate productTemplate)
         {
             if (id != productTemplate.TemplateId)
-            {
                 return BadRequest();
-            }
 
             _context.Entry(productTemplate).State = EntityState.Modified;
 
@@ -75,13 +100,9 @@ namespace p3_backend.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!ProductTemplateExists(id))
-                {
                     return NotFound();
-                }
                 else
-                {
                     throw;
-                }
             }
 
             return NoContent();
@@ -98,17 +119,13 @@ namespace p3_backend.Controllers
         }
 
         // DELETE: api/ProductTemplates/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteProductTemplate(int id)
         {
             var productTemplate = await _context.ProductTemplates.FindAsync(id);
             if (productTemplate == null)
-            {
                 return NotFound();
-            }
 
-            // Lưu ý: Nếu có ràng buộc khóa ngoại, bạn cần xử lý xóa các PrintSize/Gallery liên quan trước 
-            // hoặc thiết lập Cascade Delete trong Database.
             _context.ProductTemplates.Remove(productTemplate);
             await _context.SaveChangesAsync();
 
@@ -123,22 +140,18 @@ namespace p3_backend.Controllers
         // POST: api/ProductTemplates/upload
         [HttpPost("upload")]
         [Consumes("multipart/form-data")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UploadTemplateImage(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("No file provided.");
 
             var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ".jpg", ".jpeg", ".png", ".webp"
-                };
+                { ".jpg", ".jpeg", ".png", ".webp" };
 
             string extension = Path.GetExtension(file.FileName);
 
             if (!allowedExtensions.Contains(extension))
-                return BadRequest($"Định dạng file không được hỗ trợ. Chỉ chấp nhận: JPG, PNG, WEBP.");
+                return BadRequest("Định dạng file không được hỗ trợ. Chỉ chấp nhận: JPG, PNG, WEBP.");
 
             string uploadRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "templates");
             Directory.CreateDirectory(uploadRoot);
@@ -151,12 +164,10 @@ namespace p3_backend.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            string relativeFilePath = $"uploads/templates/{fileName}";
-
             return Ok(new
             {
                 fileName = fileName,
-                filePath = relativeFilePath
+                filePath = $"uploads/templates/{fileName}"
             });
         }
     }

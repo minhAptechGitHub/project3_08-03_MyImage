@@ -7,6 +7,8 @@ import '../../styles/admin/OrderPage.css';
 import { useOutletContext } from 'react-router-dom';
 import adminService from '../../services/adminService';
 
+import { Icon } from '@iconify/react';
+
 function PaymentTransactionPage() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -87,8 +89,12 @@ function PaymentTransactionPage() {
                   <td style={{ fontSize: 12, color: '#555' }}>{t.transactionId || '—'}</td>
                   <td><strong className="money">{vnd(t.amount)}</strong></td>
                   <td>
-                    <span className={`method-badge ${t.status === 'Success' ? 'cash' : 'card'}`}>
-                      {t.status === 'Success' ?  '✅ Thành công' : '❌ Thất bại'}
+                    <span className={`method-badge ${t.status === 'Success' ? 'cash' : 'card'}`}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      {t.status === 'Success'
+                        ? <><Icon icon="mdi:check-circle" color="#16a34a" width={16} /> Thành công</>
+                        : <><Icon icon="mdi:close-circle" color="#dc2626" width={16} /> Thất bại</>
+                      }
                     </span>
                   </td>
                   <td>

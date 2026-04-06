@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using p3_backend.Models;
 using p3_backend.DTOs;
+using p3_backend.Services;
 
 namespace p3_backend.Controllers
 {
@@ -18,18 +19,21 @@ namespace p3_backend.Controllers
     {
         private readonly P3MyImage3Context _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IEmailService _emailService;
 
-        public OrdersController(P3MyImage3Context context, IWebHostEnvironment env)
+        public OrdersController(P3MyImage3Context context, IWebHostEnvironment env, IEmailService emailService)
         {
             _context = context;
             _env = env;
+            _emailService = emailService;
         }
 
-        // GET: api/Orders
+        // GET: api/Orders (admin)
         [HttpGet]
         public async Task<IActionResult> GetOrders()
         {
             var orders = await _context.Orders
+                .AsNoTracking()
                 .Include(o => o.Cust)
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Size)
@@ -40,7 +44,7 @@ namespace p3_backend.Controllers
                     o.OrderId,
                     o.CustId,
                     o.FolderName,
-                    o.OrderDate,
+                    o.OrderDate,                    // ← Trả UTC, frontend convert sau
                     o.TotalPrice,
                     o.ShippingAddress,
                     o.Status,
@@ -81,6 +85,7 @@ namespace p3_backend.Controllers
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
+            Console.WriteLine($"[GetOrders] Trả về {orders.Count} đơn hàng cho admin");
             return Ok(orders);
         }
 
@@ -103,14 +108,17 @@ namespace p3_backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Order>> PostOrder(OrderCreateDto orderDto)
         {
-            if (orderDto == null) return BadRequest("Data is null");
+            if (orderDto == null)
+                return BadRequest("Data is null");
+
+            Console.WriteLine($"[PostOrder] Nhận request - CustId: {orderDto.CustId}, DetailsCount: {orderDto.OrderDetails?.Count ?? 0}");
 
             var order = new Order
             {
                 CustId = orderDto.CustId,
                 ShippingAddress = orderDto.ShippingAddress,
                 Status = orderDto.Status ?? "Pending",
-                OrderDate = DateTime.Now,
+                OrderDate = DateTime.UtcNow,
                 TotalPrice = 0,
                 PaymentMethod = orderDto.PaymentMethod
             };
@@ -118,16 +126,18 @@ namespace p3_backend.Controllers
             if (orderDto.OrderDetails != null && orderDto.OrderDetails.Any())
             {
                 decimal runningTotal = 0;
-
                 foreach (var item in orderDto.OrderDetails)
                 {
+                    if (item.PhotoId <= 0 || item.PricePerCopy <= 0)
+                        return BadRequest("Thông tin ảnh hoặc giá không hợp lệ.");
+
                     decimal currentLineTotal = (item.Quantity > 0 ? item.Quantity : 1) * item.PricePerCopy;
 
                     var detail = new OrderDetail
                     {
                         PhotoId = item.PhotoId,
                         SizeId = item.SizeId,
-                        Quantity = item.Quantity,
+                        Quantity = item.Quantity > 0 ? item.Quantity : 1,
                         PricePerCopy = item.PricePerCopy,
                         LineTotal = currentLineTotal
                     };
@@ -135,8 +145,11 @@ namespace p3_backend.Controllers
                     runningTotal += currentLineTotal;
                     order.OrderDetails.Add(detail);
                 }
-
                 order.TotalPrice = runningTotal;
+            }
+            else
+            {
+                Console.WriteLine($"[PostOrder] Tạo draft order không có ảnh cho CustId = {orderDto.CustId}");
             }
 
             try
@@ -144,60 +157,28 @@ namespace p3_backend.Controllers
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
                 await _context.Entry(order).ReloadAsync();
+
+                Console.WriteLine($"[PostOrder] Tạo thành công Order #{order.OrderId} | Ảnh: {order.OrderDetails.Count}");
                 return CreatedAtAction("GetOrder", new { id = order.OrderId }, order);
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[PostOrder] Lỗi: {ex.Message}");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 
-        // PUT: api/Orders/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutOrder(int id, Order order)
-        {
-            if (id != order.OrderId) return BadRequest();
-
-            _context.Entry(order).State = EntityState.Modified;
-            _context.Entry(order).Property(x => x.FolderName).IsModified = false;
-            _context.Entry(order).Property(x => x.PaymentMethod).IsModified = false;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!OrderExists(id)) return NotFound();
-                else throw;
-            }
-
-            return NoContent();
-        }
-
-        // DELETE: api/Orders/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrder(int id)
-        {
-            var order = await _context.Orders.FindAsync(id);
-            if (order == null) return NotFound();
-
-            _context.Orders.Remove(order);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        // GET: api/Orders/customer/{custId}/details
+        // GET: api/Orders/customer/{custId}/details  ← ĐÃ SỬA LỖI 500
         [HttpGet("customer/{custId}/details")]
         public async Task<IActionResult> GetOrdersByCustomer(int custId)
         {
             var orders = await _context.Orders
+                .AsNoTracking()
                 .Where(o => o.CustId == custId)
                 .Select(o => new
                 {
                     o.OrderId,
-                    o.OrderDate,
+                    o.OrderDate,                    // ← Trả UTC, frontend convert sau
                     o.TotalPrice,
                     o.ShippingAddress,
                     o.Status,
@@ -216,45 +197,91 @@ namespace p3_backend.Controllers
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
+            Console.WriteLine($"[GetOrdersByCustomer] Khách {custId} có {orders.Count} đơn hàng");
+
             return Ok(orders);
         }
 
-        // PUT: api/Orders/Status/{id}
-        [HttpPut("Status/{id}")]
-        public async Task<IActionResult> PutStatus(int id, [FromBody] string status)
+        // Các hàm còn lại giữ nguyên
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutOrder(int id, Order order)
+        {
+            if (id != order.OrderId) return BadRequest();
+            _context.Entry(order).State = EntityState.Modified;
+            _context.Entry(order).Property(x => x.FolderName).IsModified = false;
+            _context.Entry(order).Property(x => x.PaymentMethod).IsModified = false;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                if (order.Status == "Pending")
+                {
+                    await SendPendingOrderEmail(order.CustId, id, order.PaymentMethod);
+                }
+                return NoContent();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!OrderExists(id)) return NotFound();
+                else throw;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating order: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteOrder(int id)
         {
             var order = await _context.Orders.FindAsync(id);
             if (order == null) return NotFound();
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
 
+        [HttpPut("Status/{id}")]
+        public async Task<IActionResult> PutStatus(int id, [FromBody] string status)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Cust)
+                .FirstOrDefaultAsync(o => o.OrderId == id);
+            if (order == null) return NotFound("Order not found");
+
+            string oldStatus = order.Status;
             order.Status = status;
 
             try
             {
                 await _context.SaveChangesAsync();
+                if (status != "Pending")
+                {
+                    await SendStatusUpdateEmail(order, status);
+                }
+                if (status == "Completed")
+                {
+                    await DeletePhotoFolderForOrder(order);
+                }
+                return Ok(new { message = "Status updated", oldStatus, newStatus = status });
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!OrderExists(id)) return NotFound();
                 else throw;
             }
-
-            if (status == "Completed")
+            catch (Exception ex)
             {
-                await DeletePhotoFolderForOrder(order);
+                return StatusCode(500, $"Error updating status: {ex.Message}");
             }
-
-            return NoContent();
         }
 
-        // PUT: api/Orders/PaymentMethod/{id}
         [HttpPut("PaymentMethod/{id}")]
         public async Task<IActionResult> PutPaymentMethod(int id, [FromBody] string paymentMethod)
         {
             var order = await _context.Orders.FindAsync(id);
             if (order == null) return NotFound();
-
             order.PaymentMethod = paymentMethod;
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -264,8 +291,49 @@ namespace p3_backend.Controllers
                 if (!OrderExists(id)) return NotFound();
                 else throw;
             }
-
             return NoContent();
+        }
+
+        // ===== HELPER METHODS =====
+        private async Task SendPendingOrderEmail(int custId, int orderId, string paymentMethod)
+        {
+            try
+            {
+                var customer = await _context.Customers.FindAsync(custId);
+                if (!string.IsNullOrEmpty(customer?.Email) && paymentMethod != "VNPay")
+                {
+                    await _emailService.SendOrderStatusEmailAsync(
+                        customer.Email,
+                        $"{customer.FName} {customer.LName}",
+                        orderId,
+                        "Pending"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SendPendingOrderEmail] Lỗi gửi email: {ex.Message}");
+            }
+        }
+
+        private async Task SendStatusUpdateEmail(Order order, string newStatus)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(order.Cust?.Email))
+                {
+                    await _emailService.SendOrderStatusEmailAsync(
+                        order.Cust.Email,
+                        $"{order.Cust.FName} {order.Cust.LName}",
+                        order.OrderId,
+                        newStatus
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SendStatusUpdateEmail] Lỗi gửi email: {ex.Message}");
+            }
         }
 
         private async Task DeletePhotoFolderForOrder(Order order)
@@ -273,53 +341,32 @@ namespace p3_backend.Controllers
             try
             {
                 string folderName = order.FolderName;
-
                 if (string.IsNullOrEmpty(folderName))
                 {
                     var photo = await _context.Photos
                         .Where(p => p.CustId == order.CustId && !string.IsNullOrEmpty(p.FilePath))
                         .FirstOrDefaultAsync();
-
                     if (photo != null)
                     {
                         var normalized = photo.FilePath.Replace("\\", "/");
                         var parts = normalized.Split('/');
-                        if (parts.Length >= 4)
-                            folderName = parts[2];
+                        if (parts.Length >= 2)
+                            folderName = parts[^2];
                     }
                 }
-
-                if (string.IsNullOrEmpty(folderName)) return;
-
-                var webRoot = _env.WebRootPath ?? _env.ContentRootPath;
-                var folderPath = Path.Combine(webRoot, "uploads", "user", folderName);
-
-                Console.WriteLine($"[DeletePhotoFolder] Tìm folder: {folderPath}");
-
-                if (Directory.Exists(folderPath))
+                if (!string.IsNullOrEmpty(folderName))
                 {
-                    Directory.Delete(folderPath, recursive: true);
-                    Console.WriteLine($"[DeletePhotoFolder] Đã xóa folder: {folderPath}");
-                }
-                else
-                {
-                    Console.WriteLine($"[DeletePhotoFolder] Không tìm thấy folder: {folderPath}");
-                }
-
-                var photos = await _context.Photos
-                    .Where(p => p.CustId == order.CustId)
-                    .ToListAsync();
-
-                if (photos.Any())
-                {
-                    _context.Photos.RemoveRange(photos);
-                    await _context.SaveChangesAsync();
-                    Console.WriteLine($"[DeletePhotoFolder] Đã xóa {photos.Count} ảnh khỏi DB");
+                    var folderPath = Path.Combine(_env.WebRootPath, "uploads", folderName);
+                    if (Directory.Exists(folderPath))
+                    {
+                        Directory.Delete(folderPath, recursive: true);
+                        Console.WriteLine($"[DeletePhotoFolder] Đã xoá thư mục: {folderPath}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[DeletePhotoFolder] Lỗi khi xóa folder đơn #{order.OrderId}: {ex.Message}");
+                Console.WriteLine($"[DeletePhotoFolder] Lỗi xoá thư mục: {ex.Message}");
             }
         }
 

@@ -15,10 +15,12 @@ namespace p3_backend.Controllers
     public class PhotosController : ControllerBase
     {
         private readonly P3MyImage3Context _context;
+        private readonly IWebHostEnvironment _env;
 
-        public PhotosController(P3MyImage3Context context)
+        public PhotosController(P3MyImage3Context context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: api/Photos
@@ -92,6 +94,19 @@ namespace p3_backend.Controllers
                 return NotFound();
             }
 
+            // Xóa file vật lý nếu tồn tại
+            if (!string.IsNullOrEmpty(photo.FilePath))
+            {
+                var fullPath = Path.Combine(
+                    _env.WebRootPath,
+                    photo.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar)
+                );
+                if (System.IO.File.Exists(fullPath))
+                {
+                    System.IO.File.Delete(fullPath);
+                }
+            }
+
             _context.Photos.Remove(photo);
             await _context.SaveChangesAsync();
 
@@ -117,7 +132,6 @@ namespace p3_backend.Controllers
             var file = request.File;
             var orderId = request.OrderId;
 
-            // Kiểm tra định dạng file cho phép
             var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".jpg", ".jpeg", ".png", ".webp"

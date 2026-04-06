@@ -6,11 +6,29 @@ import Pagination from '../../components/Pagination';
 import { Icon } from '@iconify/react';
 import '../../styles/admin/Dashboard.css';
 import '../../styles/admin/ProductPage.css';
-
 import { useOutletContext } from 'react-router-dom';
 
 const BASE_URL = 'http://localhost:5002';
-const emptyTemplate = { templateName: '', imageUrl: '', details: '', leadTime: '', isActive: true };
+
+const emptyTemplate = {
+  templateName: '',
+  imageUrl: '',
+  details: '',
+  leadTime: '',
+  isActive: true,
+  category: '',
+  isFeatured: false,
+};
+
+const CATEGORY_OPTIONS = [
+  { value: 'anh-cong-cuoi', label: 'Ảnh cổng cưới' },
+  { value: 'anh-de-ban', label: 'Ảnh để bàn' },
+  { value: 'khung-anh',  label: 'Khung ảnh'  },
+  { value: 'in-anh',     label: 'In ảnh'      },
+];
+
+const getCategoryLabel = (value) =>
+  CATEGORY_OPTIONS.find(c => c.value === value)?.label || value || '—';
 
 function ProductPage() {
   const [templates, setTemplates] = useState([]);
@@ -55,8 +73,10 @@ function ProductPage() {
   const openEdit = (t) => { setEditData({ ...t }); setShowModal(true); };
 
   const handleSave = async () => {
-    if (!editData.templateName?.trim()) return
-    showNotify('error', 'Vui lòng nhập tên sản phẩm.');;
+    if (!editData.templateName?.trim()) {
+      showNotify('error', 'Vui lòng nhập tên sản phẩm.');
+      return;
+    }
     setSaving(true);
     try {
       if (editData.templateId) {
@@ -64,6 +84,7 @@ function ProductPage() {
       } else {
         await adminService.createTemplate(editData);
       }
+      showNotify('success', 'Lưu thành công!');
       setShowModal(false);
       fetchAll();
     } catch (err) {
@@ -120,7 +141,8 @@ function ProductPage() {
   };
 
   const handleSaveGallery = async () => {
-    if (!galleryForm.templateId || !galleryForm.imageUrl?.trim()) return showNotify('error', 'Vui lòng chọn sản phẩm và upload ảnh.');
+    if (!galleryForm.templateId || !galleryForm.imageUrl?.trim())
+      return showNotify('error', 'Vui lòng chọn sản phẩm và upload ảnh.');
     setSavingGallery(true);
     try {
       await adminService.createGallery({
@@ -176,8 +198,10 @@ function ProductPage() {
                   <th>ID</th>
                   <th>Ảnh</th>
                   <th>Tên sản phẩm</th>
+                  <th>Danh mục</th>
                   <th>Thời gian SX</th>
                   <th>Trạng thái</th>
+                  <th>Nổi bật</th>
                   <th>Mô tả</th>
                   <th>Thao tác</th>
                 </tr>
@@ -195,11 +219,17 @@ function ProductPage() {
                       />
                     </td>
                     <td><strong>{t.templateName}</strong></td>
+                    <td>{getCategoryLabel(t.category)}</td>
                     <td>{t.leadTime || '—'}</td>
                     <td>
                       <span className={`status-badge ${t.isActive ? 'completed' : 'cancelled'}`}>
                         {t.isActive ? 'Đang bán' : 'Ngừng bán'}
                       </span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {t.isFeatured
+                        ? <span className="status-badge completed">Có</span>
+                        : <span style={{ color: '#aaa' }}>—</span>}
                     </td>
                     <td className="desc-cell">{t.details || '—'}</td>
                     <td>
@@ -211,7 +241,7 @@ function ProductPage() {
                     </td>
                   </tr>
                 )) : (
-                  <tr><td colSpan="7" className="no-data">Chưa có mẫu sản phẩm nào</td></tr>
+                  <tr><td colSpan="9" className="no-data">Chưa có mẫu sản phẩm nào</td></tr>
                 )}
               </tbody>
             </table>
@@ -287,8 +317,28 @@ function ProductPage() {
           <div>
             <div className="form-group">
               <label>Tên sản phẩm *</label>
-              <input className="form-control" value={editData.templateName || ''} onChange={(e) => setEditData({ ...editData, templateName: e.target.value })} placeholder="VD: Rửa ảnh truyền thống" />
+              <input
+                className="form-control"
+                value={editData.templateName || ''}
+                onChange={(e) => setEditData({ ...editData, templateName: e.target.value })}
+                placeholder="VD: Photobook Bìa Cứng"
+              />
             </div>
+
+            <div className="form-group">
+              <label>Danh mục</label>
+              <select
+                className="form-control"
+                value={editData.category || ''}
+                onChange={(e) => setEditData({ ...editData, category: e.target.value })}
+              >
+                <option value="">— Chọn danh mục —</option>
+                {CATEGORY_OPTIONS.map(c => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="form-row">
               <div className="form-group">
                 <label>Ảnh đại diện</label>
@@ -302,26 +352,60 @@ function ProductPage() {
                 {uploadingTemplate && <small style={{ color: '#888' }}>Đang upload...</small>}
                 {editData.imageUrl && (
                   <div style={{ marginTop: 8 }}>
-                    <img src={`${BASE_URL}/${editData.imageUrl}`} alt="preview" style={{ maxHeight: 80, borderRadius: 4, border: '1px solid #ddd' }} />
+                    <img
+                      src={`${BASE_URL}/${editData.imageUrl}`}
+                      alt="preview"
+                      style={{ maxHeight: 80, borderRadius: 4, border: '1px solid #ddd' }}
+                    />
                     <small style={{ display: 'block', color: '#888', marginTop: 4 }}>{editData.imageUrl}</small>
                   </div>
                 )}
               </div>
               <div className="form-group">
                 <label>Thời gian sản xuất</label>
-                <input className="form-control" value={editData.leadTime || ''} onChange={(e) => setEditData({ ...editData, leadTime: e.target.value })} placeholder="VD: 1-2 ngày" />
+                <input
+                  className="form-control"
+                  value={editData.leadTime || ''}
+                  onChange={(e) => setEditData({ ...editData, leadTime: e.target.value })}
+                  placeholder="VD: 1-2 ngày"
+                />
               </div>
             </div>
+
             <div className="form-group">
               <label>Mô tả chi tiết</label>
-              <textarea className="form-control" rows={3} value={editData.details || ''} onChange={(e) => setEditData({ ...editData, details: e.target.value })} placeholder="Mô tả sản phẩm..." />
+              <textarea
+                className="form-control"
+                rows={3}
+                value={editData.details || ''}
+                onChange={(e) => setEditData({ ...editData, details: e.target.value })}
+                placeholder="Mô tả sản phẩm..."
+              />
             </div>
-            <div className="form-group">
-              <label>Trạng thái</label>
-              <select className="form-control" value={editData.isActive ? 'true' : 'false'} onChange={(e) => setEditData({ ...editData, isActive: e.target.value === 'true' })}>
-                <option value="true">Đang bán</option>
-                <option value="false">Ngừng bán</option>
-              </select>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Trạng thái</label>
+                <select
+                  className="form-control"
+                  value={editData.isActive ? 'true' : 'false'}
+                  onChange={(e) => setEditData({ ...editData, isActive: e.target.value === 'true' })}
+                >
+                  <option value="true">Đang bán</option>
+                  <option value="false">Ngừng bán</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ display: 'flex', alignItems: 'center', paddingTop: 28 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={editData.isFeatured || false}
+                    onChange={(e) => setEditData({ ...editData, isFeatured: e.target.checked })}
+                    style={{ width: 16, height: 16 }}
+                  />
+                  Sản phẩm nổi bật
+                </label>
+              </div>
             </div>
           </div>
         )}
@@ -340,7 +424,11 @@ function ProductPage() {
         <div>
           <div className="form-group">
             <label>Loại sản phẩm *</label>
-            <select className="form-control" value={galleryForm.templateId} onChange={(e) => setGalleryForm({ ...galleryForm, templateId: e.target.value })}>
+            <select
+              className="form-control"
+              value={galleryForm.templateId}
+              onChange={(e) => setGalleryForm({ ...galleryForm, templateId: e.target.value })}
+            >
               <option value="">— Chọn sản phẩm —</option>
               {templates.map(t => (
                 <option key={t.templateId} value={t.templateId}>{t.templateName}</option>
@@ -359,14 +447,23 @@ function ProductPage() {
             {uploadingGallery && <small style={{ color: '#888' }}>Đang upload...</small>}
             {galleryForm.imageUrl && (
               <div style={{ marginTop: 8 }}>
-                <img src={`${BASE_URL}/${galleryForm.imageUrl}`} alt="preview" style={{ maxHeight: 80, borderRadius: 4, border: '1px solid #ddd' }} />
+                <img
+                  src={`${BASE_URL}/${galleryForm.imageUrl}`}
+                  alt="preview"
+                  style={{ maxHeight: 80, borderRadius: 4, border: '1px solid #ddd' }}
+                />
                 <small style={{ display: 'block', color: '#888', marginTop: 4 }}>{galleryForm.imageUrl}</small>
               </div>
             )}
           </div>
           <div className="form-group">
             <label>Chú thích</label>
-            <input className="form-control" value={galleryForm.caption} onChange={(e) => setGalleryForm({ ...galleryForm, caption: e.target.value })} placeholder="Chú thích ảnh..." />
+            <input
+              className="form-control"
+              value={galleryForm.caption}
+              onChange={(e) => setGalleryForm({ ...galleryForm, caption: e.target.value })}
+              placeholder="Chú thích ảnh..."
+            />
           </div>
         </div>
       </Modal>

@@ -23,6 +23,8 @@ function Home() {
         }
     };
 
+    const featuredProducts = products.filter(p => p.isFeatured);
+
     const features = [
         {
             icon: 'twemoji:framed-picture',
@@ -83,13 +85,13 @@ function Home() {
                 <div className="container">
                     <div className="customer-section-header">
                         <span className="section-tag">Dịch vụ</span>
-                        <h2>Dịch vụ của chúng tôi</h2>
+                        <h2>Dịch vụ nổi bật của chúng tôi</h2>
                         <p>Lựa chọn sản phẩm phù hợp để lưu giữ kỷ niệm đẹp của bạn</p>
                     </div>
 
                     <div className="product-grid">
-                        {products.length > 0 ? (
-                            products.map((product) => (
+                        {featuredProducts.length > 0 ? (
+                            featuredProducts.map((product) => (
                                 <div
                                     key={product.templateId}
                                     className="product-card"

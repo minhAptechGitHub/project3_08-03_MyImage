@@ -34,7 +34,24 @@ function OrderNew() {
 
   const dragCounter = useRef(0);
 
+  // Refs để tránh stale closure trong cleanup khi unmount
+  const draftOrderIdRef = useRef(null);
+  const stepRef = useRef(1);
+
   const { showNotify } = useOutletContext();
+
+  // Đồng bộ refs với state
+  useEffect(() => { draftOrderIdRef.current = draftOrderId; }, [draftOrderId]);
+  useEffect(() => { stepRef.current = step; }, [step]);
+
+  // Tự động huỷ draft khi user thoát trang giữa chừng (chưa hoàn tất bước 5)
+  useEffect(() => {
+    return () => {
+      if (draftOrderIdRef.current && stepRef.current < 5) {
+        userService.cancelOrder(draftOrderIdRef.current).catch(() => {});
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!templateId) return;
@@ -56,7 +73,7 @@ function OrderNew() {
   const ensureDraftOrder = async () => {
     if (draftOrderId) return draftOrderId;
     if (!user.custId) {
-      showNotify('error', 'Vui lòng đăng nhập để đặt hàng.')
+      showNotify('error', 'Vui lòng đăng nhập để đặt hàng.');
       navigate('/auth/login');
       return null;
     }
@@ -108,7 +125,7 @@ function OrderNew() {
           }]);
         } catch (err) {
           console.error('Lỗi upload:', err);
-          showNotify('error', `Lỗi khi upload ảnh: ${file.name}`)
+          showNotify('error', `Lỗi khi upload ảnh: ${file.name}`);
         }
       }
     } finally {
@@ -202,12 +219,17 @@ function OrderNew() {
       } else {
         // 3b. COD: cập nhật PaymentMethod vào Orders + tạo bản ghi Payment
         await userService.updateOrderPaymentMethod(draftOrderId, 'COD');
-        await userService.createPayment({
-          orderId: draftOrderId,
-          paymentMethod: 'COD',
-          paymentStatus: 'Pending',
-          paymentDate: new Date().toISOString()
-        });
+        try {
+          await userService.createPayment({
+            orderId: draftOrderId,
+            paymentMethod: 'COD',
+            paymentStatus: 'Pending',
+            paymentDate: new Date().toISOString()
+          });
+        } catch (payErr) {
+          // Bỏ qua nếu payment record đã tồn tại (unique constraint trên OrderId)
+          console.warn('Payment record đã tồn tại, bỏ qua:', payErr);
+        }
         setStep(5);
       }
     } catch (err) {
@@ -217,7 +239,6 @@ function OrderNew() {
       setSubmitting(false);
     }
   };
-
 
   const totalPrice = photos.reduce((sum, photo) => {
     const size = sizes.find(s => s.sizeId === photo.sizeId);
@@ -292,7 +313,7 @@ function OrderNew() {
                 <button
                   className="btn-next"
                   onClick={() => {
-                    if (photos.length === 0) return showNotify('error', 'Vui lòng upload ít nhất 1 ảnh.')
+                    if (photos.length === 0) return showNotify('error', 'Vui lòng upload ít nhất 1 ảnh.');
                     setStep(2);
                   }}
                   disabled={uploading}
@@ -427,10 +448,8 @@ function OrderNew() {
                 </strong>
               </p>
 
-              {/* PAYMENT OPTIONS */}
               <div className="payment-options">
 
-                {/* COD */}
                 <div
                   className={`payment-option ${paymentMethod === 'COD' ? 'selected' : ''}`}
                   onClick={() => setPaymentMethod('COD')}
@@ -438,14 +457,12 @@ function OrderNew() {
                   <span className="payment-icon">
                     <Icon icon="twemoji:money-with-wings" width="24" />
                   </span>
-
                   <div>
                     <strong>Thanh toán khi nhận hàng (COD)</strong>
                     <p>Trả tiền mặt khi nhận được sản phẩm</p>
                   </div>
                 </div>
 
-                {/* VNPay (IMAGE ONLY) */}
                 <div
                   className={`payment-option ${paymentMethod === 'VNPay' ? 'selected' : ''}`}
                   onClick={() => setPaymentMethod('VNPay')}
@@ -457,7 +474,6 @@ function OrderNew() {
                       style={{ width: '28px', height: '28px', objectFit: 'contain' }}
                     />
                   </span>
-
                   <div>
                     <strong>Thanh toán qua VNPay</strong>
                     <p>Quét mã QR để thanh toán nhanh chóng</p>
@@ -466,7 +482,6 @@ function OrderNew() {
 
               </div>
 
-              {/* NOTICE */}
               {paymentMethod === 'VNPay' && (
                 <div className="vnpay-notice">
                   <Icon icon="twemoji:light-bulb" width="18" style={{ marginRight: '6px' }} />
@@ -474,7 +489,6 @@ function OrderNew() {
                 </div>
               )}
 
-              {/* ACTIONS */}
               <div className="step-actions">
                 <button className="btn-back" onClick={() => setStep(3)}>
                   ← Quay lại
@@ -488,9 +502,7 @@ function OrderNew() {
                   {submitting ? (
                     'Đang xử lý...'
                   ) : paymentMethod === 'VNPay' ? (
-                    <>
-                      Tiếp tục thanh toán VNPay →
-                    </>
+                    <>Tiếp tục thanh toán VNPay →</>
                   ) : (
                     <>
                       <Icon icon="twemoji:check-mark-button" width="18" style={{ marginRight: '6px' }} />

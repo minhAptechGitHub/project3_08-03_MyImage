@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using p3_backend.Data;
 using p3_backend.Models;
+using p3_backend.Services;
 using System;
 using System.Text;
 
@@ -49,14 +49,10 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 var app = builder.Build();
 
-//them du lieu mau
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<P3MyImage3Context>();
-    await DbSeeder.SeedData(context);
-}
 // Add this after var app = builder.Build();
 app.UseCors("AllowReactApp");
 

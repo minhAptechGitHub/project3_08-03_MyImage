@@ -46,7 +46,7 @@ function MyOrders() {
     const fetchOrders = async () => {
       try {
         const data = await userService.getMyOrders(user.custId);
-        setOrders(data || []);
+        setOrders((data || []).filter(o => o.shippingAddress !== 'DRAFT'));
       } catch (err) {
         console.error('Lỗi tải đơn hàng:', err);
       } finally {

@@ -17,6 +17,10 @@ public partial class ProductTemplate
 
     public bool IsActive { get; set; }
 
+    public string Category { get; set; }
+
+    public bool IsFeatured { get; set; }
+
     public virtual ICollection<PrintSize> PrintSizes { get; set; } = new List<PrintSize>();
 
     public virtual ICollection<ProductGallery> ProductGalleries { get; set; } = new List<ProductGallery>();
