@@ -24,8 +24,28 @@ import MyOrders from './pages/customer/MyOrders';
 import CustomOrder from './pages/customer/CustomOrder';
 import Profile from './pages/customer/ProfileCustomer';
 import VnPayCallback from './pages/customer/VnPayCallback';
+import CategoryPage from './pages/customer/CategoryPage';
 
 import './App.css';
+
+// Debounce để tránh toast hiện 2 lần do React StrictMode
+let _lastAuthToast = 0;
+
+// Bảo vệ route — hiện toast rồi redirect nếu chưa đăng nhập
+function ProtectedRoute({ user, showNotify, children }) {
+  useEffect(() => {
+    if (!user) {
+      const now = Date.now();
+      if (now - _lastAuthToast > 1000) {
+        _lastAuthToast = now;
+        showNotify?.('info', 'Vui lòng đăng nhập hoặc đăng ký tài khoản để đặt in');
+      }
+    }
+  }, []);
+
+  if (!user) return <Navigate to="/auth/login" replace />;
+  return children;
+}
 
 function App() {
   const [user, setUser] = useState(null);
@@ -50,18 +70,18 @@ function App() {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const isExpired = payload.exp * 1000 < Date.now();
         if (isExpired) {
-          localStorage.removeItem('user');
+          sessionStorage.removeItem('user');
           setUser(null);
           return;
         }
       }
 
       setUser(userData);
-      setNotifies([])
+      setNotifies([]);
     } catch (err) {
       console.error("Lỗi parse user:", err);
-      localStorage.removeItem('user');
-      showNotify('error', 'Lỗi parse user');
+      sessionStorage.removeItem('user');
+      showNotify?.('error', 'Lỗi parse user');
     }
   }, []);
 
@@ -74,7 +94,7 @@ function App() {
   const handleLogout = () => {
     sessionStorage.removeItem('user');
     setUser(null);
-    showNotify('success', 'Bạn đã Logged out');
+    showNotify?.('success', 'Bạn đã Logged out');
   };
 
   return (
@@ -106,29 +126,20 @@ function App() {
             path="/auth/admin-login"
             element={
               user
-                ? <Navigate to="/admin/dashboard" replace />
-                : <AdminLogin onSuccess={handleLogin} showNotify={showNotify} />
-            }
-          />
-          
-          <Route
-            path="/auth/admin-login"
-            element={
-              user
                 ? (
                   user.role?.toLowerCase() === "admin"
                     ? <Navigate to="/admin/dashboard" replace />
                     : <Navigate to="/" replace />
                 )
                 : <AdminLogin
-                    onSuccess={(userData, role, token) => {
-                      handleLogin(userData, role, token);
-                      window.location.href = "/admin/dashboard";
-                    }}
-                  />
+                  onSuccess={(userData, role, token) => {
+                    handleLogin(userData, role, token);
+                    window.location.href = "/admin/dashboard";
+                  }}
+                  showNotify={showNotify}
+                />
             }
           />
-
           <Route
             path="/auth/register"
             element={
@@ -155,7 +166,6 @@ function App() {
           <Route path="payment-transaction" element={<PaymentTransactionPage />} />
           <Route path="customers" element={<CustomerPage />} />
           <Route path="photos" element={<PhotoPage />} />
-
           <Route index element={<Navigate to="dashboard" replace />} />
         </Route>
 
@@ -168,13 +178,45 @@ function App() {
               : <CustomerLayout user={user} onLogout={handleLogout} showNotify={showNotify} />
           }
         >
+          {/* Route công khai */}
           <Route index element={<Home />} />
           <Route path="product/:id" element={<ProductDetail />} />
-          <Route path="order/new" element={<OrderNew />} />
-          <Route path="order/custom" element={<CustomOrder />} />
-          <Route path="orders" element={<MyOrders />} />
-          <Route path="profile" element={<Profile />} />
           <Route path="VnPay/callback" element={<VnPayCallback />} />
+          <Route path="danh-muc/:category" element={<CategoryPage />} />
+
+          {/* Route yêu cầu đăng nhập */}
+          <Route
+            path="order/new"
+            element={
+              <ProtectedRoute user={user} showNotify={showNotify}>
+                <OrderNew />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="order/custom"
+            element={
+              <ProtectedRoute user={user} showNotify={showNotify}>
+                <CustomOrder />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="orders"
+            element={
+              <ProtectedRoute user={user} showNotify={showNotify}>
+                <MyOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute user={user} showNotify={showNotify}>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         {/* 🚫 fallback */}

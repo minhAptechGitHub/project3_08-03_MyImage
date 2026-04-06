@@ -1,15 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import userService from '../../services/userService';
+import { Icon } from '@iconify/react';
 
-/**
- * VNPay callback page.
- * VNPay redirects the browser here after payment:
- *   /VnPay/callback?vnp_ResponseCode=00&vnp_TxnRef=5&...
- *
- * This page forwards all query params to the backend for signature validation
- * and then shows the result to the customer.
- */
 function VnPayCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -18,12 +11,21 @@ function VnPayCallback() {
   const [message, setMessage] = useState('');
   const [orderId, setOrderId] = useState(null);
 
+  // Chặn gọi verify nhiều lần (React StrictMode double-invoke hoặc re-render)
+  const called = useRef(false);
+
   useEffect(() => {
+    if (called.current) return;
+    called.current = true;
+
     const verify = async () => {
       try {
-        // Forward ALL query params to backend for validation
-        const queryString = searchParams.toString();
-        const result = await userService.confirmVnPayCallback(queryString);
+        const data = {};
+        searchParams.forEach((value, key) => {
+          data[key] = value;
+        });
+
+        const result = await userService.confirmVnPayCallback(data);
 
         if (result.success) {
           setStatus('success');
@@ -59,7 +61,10 @@ function VnPayCallback() {
     <div style={styles.wrapper}>
       <div style={styles.card}>
         <div style={{ fontSize: 64, marginBottom: 16 }}>
-          {status === 'success' ? '🎉' : '❌'}
+          {status === 'success'
+            ? <Icon icon="noto:party-popper" width={64} />
+            : <Icon icon="noto:cross-mark" width={64} />
+          }
         </div>
         <h2 style={{ color: status === 'success' ? '#22c55e' : '#ef4444', marginBottom: 8 }}>
           {status === 'success' ? 'Thanh toán thành công!' : 'Thanh toán thất bại'}

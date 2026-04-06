@@ -361,6 +361,12 @@ public partial class P3MyImage3Context : DbContext
                 .IsRequired()
                 .HasMaxLength(200)
                 .HasColumnName("template_name");
+            entity.Property(e => e.Category)
+                .HasMaxLength(100)
+                .HasColumnName("Category");
+            entity.Property(e => e.IsFeatured)
+                .HasDefaultValue(false)
+                .HasColumnName("IsFeatured");
         });
 
         OnModelCreatingPartial(modelBuilder);

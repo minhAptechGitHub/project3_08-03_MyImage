@@ -19,30 +19,32 @@ const userService = {
   getAvailableTemplates: () => axiosClient.get('/producttemplates/active'),
   getSizesByTemplate: (templateId) => axiosClient.get(`/printsizes/ByTemplate/${templateId}`),
   getTemplateById: (templateId) => axiosClient.get(`/producttemplates/${templateId}`),
+  getTemplatesByCategory: (category) => axiosClient.get(`/producttemplates/category/${category}`),
 
   // ORDERS
-createDraftOrder: (orderData) => axiosClient.post('/orders', orderData),
-createOrder: (orderData) => axiosClient.post('/orders', orderData),
-createOrderDetail: (detailData) => axiosClient.post('/orderdetails', detailData),
-updateOrder: (orderId, orderData) => axiosClient.put(`/orders/${orderId}`, orderData),
-updateOrderPaymentMethod: (orderId, method) =>
-  axiosClient.put(`/orders/PaymentMethod/${orderId}`, JSON.stringify(method), {
-    headers: { 'Content-Type': 'application/json' }
-  }),
-getMyOrders: (custId) => axiosClient.get(`/orders/customer/${custId}/details`),
-cancelOrder: (orderId) =>
-  axiosClient.put(`/orders/Status/${orderId}`, JSON.stringify('Cancelled'), {
-    headers: { 'Content-Type': 'application/json' }
-  }),
-  
+  createDraftOrder: (orderData) => axiosClient.post('/orders', orderData),
+  createOrder: (orderData) => axiosClient.post('/orders', orderData),
+  createOrderDetail: (detailData) => axiosClient.post('/orderdetails', detailData),
+  updateOrder: (orderId, orderData) => axiosClient.put(`/orders/${orderId}`, orderData),
+  updateOrderPaymentMethod: (orderId, method) =>
+    axiosClient.put(`/orders/PaymentMethod/${orderId}`, JSON.stringify(method), {
+      headers: { 'Content-Type': 'application/json' }
+    }),
+  getMyOrders: (custId) => axiosClient.get(`/orders/customer/${custId}/details`),
+  cancelOrder: (orderId) =>
+    axiosClient.put(`/orders/Status/${orderId}`, JSON.stringify('Cancelled'), {
+      headers: { 'Content-Type': 'application/json' }
+    }),
+
   // PAYMENTS
   createPayment: (paymentData) => axiosClient.post('/payments', paymentData),
 
   // VNPAY
   createVnPayUrl: (orderId, amount) =>
     axiosClient.post('/vnpay/create-payment-url', { orderId, amount }),
-  confirmVnPayCallback: (queryString) =>
-    axiosClient.get(`/vnpay/callback?${queryString}`),
+
+  confirmVnPayCallback: (data) =>
+    axiosClient.post('/vnpay/verify', data),
 };
 
 export default userService;
