@@ -340,33 +340,102 @@ namespace p3_backend.Controllers
         {
             try
             {
+                // 1) xác định folderName
                 string folderName = order.FolderName;
+
                 if (string.IsNullOrEmpty(folderName))
                 {
-                    var photo = await _context.Photos
+                    var photoSample = await _context.Photos
                         .Where(p => p.CustId == order.CustId && !string.IsNullOrEmpty(p.FilePath))
                         .FirstOrDefaultAsync();
-                    if (photo != null)
+
+                    if (photoSample != null)
                     {
-                        var normalized = photo.FilePath.Replace("\\", "/");
+                        var normalized = photoSample.FilePath.Replace("\\", "/");
                         var parts = normalized.Split('/');
                         if (parts.Length >= 2)
                             folderName = parts[^2];
                     }
                 }
-                if (!string.IsNullOrEmpty(folderName))
+
+                if (string.IsNullOrEmpty(folderName))
                 {
-                    var folderPath = Path.Combine(_env.WebRootPath, "uploads", folderName);
-                    if (Directory.Exists(folderPath))
+                    Console.WriteLine("❌ Không tìm được folderName");
+                    return;
+                }
+
+                // 2) lấy tất cả photos thuộc folder
+                var folderMarker = $"uploads/user/{folderName}/";
+
+                var photosToDelete = await _context.Photos
+                    .Where(p => !string.IsNullOrEmpty(p.FilePath)
+                                && p.FilePath.Replace("\\", "/").Contains(folderMarker))
+                    .ToListAsync();
+
+                if (!photosToDelete.Any())
+                {
+                    Console.WriteLine("⚠️ Không có ảnh trong DB, thử xóa folder vật lý");
+
+                    var folderPathOnly = Path.Combine(_env.WebRootPath, "uploads", "user", folderName);
+                    if (Directory.Exists(folderPathOnly))
+                        Directory.Delete(folderPathOnly, true);
+
+                    return;
+                }
+
+                var photoIds = photosToDelete.Select(p => p.PhotoId).ToList();
+
+                // 3) KHÔNG xóa OrderDetails → chỉ gỡ liên kết PhotoId
+                var orderDetails = await _context.OrderDetails
+                    .Where(od => od.PhotoId.HasValue && photoIds.Contains(od.PhotoId.Value))
+                    .ToListAsync();
+
+                foreach (var od in orderDetails)
+                {
+                    od.PhotoId = null;
+                }
+
+                await _context.SaveChangesAsync();
+
+                // 4) xóa file vật lý
+                foreach (var photo in photosToDelete)
+                {
+                    if (!string.IsNullOrEmpty(photo.FilePath))
                     {
-                        Directory.Delete(folderPath, recursive: true);
-                        Console.WriteLine($"[DeletePhotoFolder] Đã xoá thư mục: {folderPath}");
+                        var fullPath = Path.Combine(
+                            _env.WebRootPath,
+                            photo.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar)
+                        );
+
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                            System.IO.File.Delete(fullPath);
+                            Console.WriteLine($"🗑 Deleted file: {fullPath}");
+                        }
                     }
+                }
+
+                // 5) xóa Photos trong DB
+                _context.Photos.RemoveRange(photosToDelete);
+                await _context.SaveChangesAsync();
+
+                // 6) xóa folder
+                var folderPath = Path.Combine(_env.WebRootPath, "uploads", "user", folderName);
+
+                if (Directory.Exists(folderPath))
+                {
+                    Directory.Delete(folderPath, true);
+                    Console.WriteLine($"✅ Đã xoá folder: {folderPath}");
+                }
+                else
+                {
+                    Console.WriteLine("⚠️ Folder không tồn tại");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[DeletePhotoFolder] Lỗi xoá thư mục: {ex.Message}");
+                Console.WriteLine($"❌ Lỗi xoá folder/db: {ex}");
+                throw; // 👉 để biết lỗi thật khi debug
             }
         }
 

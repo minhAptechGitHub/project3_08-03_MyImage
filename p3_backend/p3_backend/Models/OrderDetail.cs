@@ -9,7 +9,7 @@ public partial class OrderDetail
 
     public int OrderId { get; set; }
 
-    public int PhotoId { get; set; }
+    public int? PhotoId { get; set; }
 
     public int? SizeId { get; set; }
 
@@ -23,7 +23,7 @@ public partial class OrderDetail
 
     public virtual Order Order { get; set; }
 
-    public virtual Photo Photo { get; set; }
+    public virtual Photo? Photo { get; set; }
 
     public virtual PrintSize Size { get; set; }
 }
