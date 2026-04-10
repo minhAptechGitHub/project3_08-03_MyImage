@@ -64,31 +64,33 @@ function CategoryPage() {
                 </div>
             ) : (
                 <div className="cat-grid">
-                    {products.map(product => (
-                        <Link
-                            key={product.templateId}
-                            to={`/product/${product.templateId}`}
-                            className="cat-card"
-                        >
-                            <div className="cat-card-img-wrap">
-                                <img
-                                    src={product.imageUrl ? `${BASE_URL}/${product.imageUrl}` : 'https://placehold.co/300x220?text=No+Image'}
-                                    alt={product.templateName}
-                                    onError={e => { e.target.src = 'https://placehold.co/300x220?text=No+Image'; }}
-                                />
-                                {product.isFeatured && <span className="cat-badge-featured">Nổi bật</span>}
-                            </div>
-                            <div className="cat-card-body">
-                                <h3 className="cat-card-name">{product.templateName}</h3>
-                                {product.leadTime && <p className="cat-card-lead">
-                                    <Icon icon="twemoji:alarm-clock" width="16" style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                                    {product.leadTime}
-                                </p>}
-                                {product.details && <p className="cat-card-desc">{product.details}</p>}
-                                <span className="cat-card-btn">Xem chi tiết →</span>
-                            </div>
-                        </Link>
-                    ))}
+                    {[...products]
+                        .sort((a, b) => (b.isFeatured === true) - (a.isFeatured === true))
+                        .map(product => (
+                            <Link
+                                key={product.templateId}
+                                to={`/product/${product.templateId}`}
+                                className="cat-card"
+                            >
+                                <div className="cat-card-img-wrap">
+                                    <img
+                                        src={product.imageUrl ? `${BASE_URL}/${product.imageUrl}` : 'https://placehold.co/300x220?text=No+Image'}
+                                        alt={product.templateName}
+                                        onError={e => { e.target.src = 'https://placehold.co/300x220?text=No+Image'; }}
+                                    />
+                                    {product.isFeatured && <span className="cat-badge-featured">Nổi bật</span>}
+                                </div>
+                                <div className="cat-card-body">
+                                    <h3 className="cat-card-name">{product.templateName}</h3>
+                                    {product.leadTime && <p className="cat-card-lead">
+                                        <Icon icon="twemoji:alarm-clock" width="16" style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                                        {product.leadTime}
+                                    </p>}
+                                    {product.details && <p className="cat-card-desc">{product.details}</p>}
+                                    <span className="cat-card-btn">Xem chi tiết →</span>
+                                </div>
+                            </Link>
+                        ))}
                 </div>
             )}
         </div>

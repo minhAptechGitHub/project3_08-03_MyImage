@@ -30,13 +30,17 @@ function PaymentTransactionPage() {
 
   useEffect(() => { fetchAll(); }, []);
 
-  const filtered = transactions.filter(t =>
-    !search ||
-    String(t.id).includes(search) ||
-    String(t.orderId).includes(search) ||
-    (t.transactionId || '').toLowerCase().includes(search.toLowerCase()) ||
-    (t.paymentMethod || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = transactions.filter(t => {
+    const keyword = search.toLowerCase();
+
+    return (
+      !search ||
+      String(t.id).toLowerCase().includes(keyword) ||
+      String(t.orderId).toLowerCase().includes(keyword) ||
+      String(t.transactionId || '').toLowerCase().includes(keyword) ||
+      String(t.paymentMethod || '').toLowerCase().includes(keyword)
+    );
+  });
 
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 

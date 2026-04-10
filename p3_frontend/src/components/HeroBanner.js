@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './HeroBanner.css';
 
@@ -27,48 +27,73 @@ const slides = [
 
 function HeroBanner() {
   const [current, setCurrent] = useState(0);
+  const intervalRef = useRef(null);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
+  const startAuto = () => {
+    stopAuto();
+    intervalRef.current = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 5000);
+  };
 
-    return () => clearInterval(timer);
+  const stopAuto = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  };
+
+  const nextSlide = () => {
+    setCurrent((prev) => (prev + 1) % slides.length);
+    startAuto();
+  };
+
+  const prevSlide = () => {
+    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+    startAuto();
+  };
+
+  useEffect(() => {
+    startAuto();
+    return stopAuto;
   }, []);
 
   return (
-    <div className="hero-banner">
+    <div
+      className="hero-banner"
+      onMouseEnter={stopAuto}
+      onMouseLeave={startAuto}
+    >
+      {/* Image */}
       <img
         src={slides[current].image}
-        alt={slides[current].title}  // alt ý nghĩa hơn
+        alt={slides[current].title}
         className="banner-image"
-        loading="lazy"
       />
 
-      {/* Text Overlay */}
+      {/* Text */}
       <div className="banner-text">
         <h1>{slides[current].title}</h1>
         <p>{slides[current].subtitle}</p>
-        <Link to='/order/custom' className="banner-btn">  {/* thay /home bằng route phù hợp */}
+        <Link to="/order/custom" className="banner-btn">
           Đặt in ngay
         </Link>
       </div>
+
+      {/* Arrows */}
+      <button className="banner-arrow left" onClick={prevSlide}>
+        ‹
+      </button>
+      <button className="banner-arrow right" onClick={nextSlide}>
+        ›
+      </button>
 
       {/* Dots */}
       <div className="banner-dots">
         {slides.map((slide, index) => (
           <span
-            key={index}
+            key={slide.image}
             className={`dot ${index === current ? 'active' : ''}`}
-            onClick={() => setCurrent(index)}
-            role="button"
-            tabIndex={0}
-            aria-label={`Chuyển đến slide ${index + 1}: ${slide.title}`}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setCurrent(index);
-              }
+            onClick={() => {
+              setCurrent(index);
+              startAuto();
             }}
           />
         ))}

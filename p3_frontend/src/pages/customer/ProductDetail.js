@@ -6,6 +6,12 @@ import '../../styles/customer/productDetail.css';
 import { Icon } from '@iconify/react';
 
 function ProductDetail() {
+  const CATEGORIES = [
+    { value: 'anh-de-ban', label: 'Ảnh để bàn' },
+    { value: 'khung-anh', label: 'Khung ảnh' },
+    { value: 'anh-cong-cuoi', label: 'Ảnh cổng cưới' },
+    { value: 'in-anh', label: 'In ảnh' },
+  ];
   const { id } = useParams();
   const navigate = useNavigate();
   const [template, setTemplate] = useState(null);
@@ -41,13 +47,23 @@ function ProductDetail() {
   return (
     <div className="pd-page">
       <div className="container">
-
         {/* Breadcrumb */}
         <div className="pd-breadcrumb">
           <span onClick={() => navigate('/')} className="bc-link">Trang chủ</span>
           <span className="bc-sep">›</span>
-          <span onClick={() => navigate('/products')} className="bc-link">Dịch vụ</span>
-          <span className="bc-sep">›</span>
+
+          {template.category && (
+            <>
+              <span
+                onClick={() => navigate(`/products?category=${template.category}`)}
+                className="bc-link"
+              >
+                {CATEGORIES.find(c => c.value === template.category)?.label || template.category}
+              </span>
+              <span className="bc-sep">›</span>
+            </>
+          )}
+
           <span className="bc-current">{template.templateName}</span>
         </div>
 

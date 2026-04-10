@@ -6,7 +6,7 @@ import '../../styles/admin/Dashboard.css';
 
 const STATUS_MAP = {
   pending: { label: 'Chờ xử lý', cls: 'pending' },
-  'payment-verified': { label: 'Đã xác nhận TT', cls: 'payment-verified' },
+  'payment verified': { label: 'Đã xác nhận TT', cls: 'payment-verified' },
   processing: { label: 'Đang xử lý', cls: 'processing' },
   printed: { label: 'Đã in', cls: 'printed' },
   shipped: { label: 'Đang giao', cls: 'shipped' },
@@ -27,6 +27,9 @@ function Dashboard() {
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const isCustomOrder = (order) =>
+    Number(order.totalPrice) === 0 &&
+    order.orderDetails?.some(d => d.size === null || d.size === undefined);
 
   const fetchData = async (isRefresh = false) => {
     try {
@@ -142,10 +145,36 @@ function Dashboard() {
                 const { label, cls } = getStatusInfo(order.status);
                 return (
                   <tr key={order.orderId}>
-                    <td><span className="order-id">#ORD-{String(order.orderId || 0).padStart(4, '0')}</span></td>
-                    <td>Khách #{order.custId}</td>
+                    <td>
+                      <span className="order-id">
+                        #ORD-{String(order.orderId || 0).padStart(4, '0')}
+                      </span>
+
+                      {isCustomOrder(order) && (
+                        <span className="custom-order-tag">Theo yêu cầu</span>
+                      )}
+                    </td>
+                    <td>
+                      {order.cust ? (
+                        <>
+                          <div>{order.cust.fName} {order.cust.lName}</div>
+                          {order.cust.email && (
+                            <div style={{ fontSize: 11, color: '#888' }}>
+                              {order.cust.email}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        `Khách #${order.custId}`
+                      )}
+                    </td>
                     <td>{new Date(order.orderDate || Date.now()).toLocaleDateString('vi-VN')}</td>
-                    <td><strong className="money">{vnd(order.totalPrice)}</strong></td>
+                    <td>
+                      {isCustomOrder(order)
+                        ? <span className="pending-quote">Chờ báo giá</span>
+                        : <strong className="money">{vnd(order.totalPrice)}</strong>
+                      }
+                    </td>
                     <td><span className={`status-badge ${cls}`}>{label}</span></td>
                   </tr>
                 );
